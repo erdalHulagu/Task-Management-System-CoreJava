@@ -1,0 +1,32 @@
+2025-09-01 22:49:01.505 BST [28130] LOG:  starting PostgreSQL 14.19 (Homebrew) on x86_64-apple-darwin20.6.0, compiled by Apple clang version 13.0.0 (clang-1300.0.29.30), 64-bit
+2025-09-01 22:49:01.510 BST [28130] LOG:  could not bind IPv6 address "::1": Address already in use
+2025-09-01 22:49:01.510 BST [28130] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2025-09-01 22:49:01.510 BST [28130] LOG:  could not bind IPv4 address "127.0.0.1": Address already in use
+2025-09-01 22:49:01.510 BST [28130] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2025-09-01 22:49:01.510 BST [28130] WARNING:  could not create listen socket for "localhost"
+2025-09-01 22:49:01.511 BST [28130] FATAL:  could not create any TCP/IP sockets
+2025-09-01 22:49:01.512 BST [28130] LOG:  database system is shut down
+2025-09-01 22:50:14.615 BST [28166] LOG:  starting PostgreSQL 14.19 (Homebrew) on x86_64-apple-darwin20.6.0, compiled by Apple clang version 13.0.0 (clang-1300.0.29.30), 64-bit
+2025-09-01 22:50:14.620 BST [28166] LOG:  could not bind IPv6 address "::1": Address already in use
+2025-09-01 22:50:14.620 BST [28166] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2025-09-01 22:50:14.620 BST [28166] LOG:  could not bind IPv4 address "127.0.0.1": Address already in use
+2025-09-01 22:50:14.620 BST [28166] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2025-09-01 22:50:14.620 BST [28166] WARNING:  could not create listen socket for "localhost"
+2025-09-01 22:50:14.620 BST [28166] FATAL:  could not create any TCP/IP sockets
+2025-09-01 22:50:14.621 BST [28166] LOG:  database system is shut down
+2025-09-01 22:54:14.072 BST [28287] LOG:  starting PostgreSQL 14.19 (Homebrew) on x86_64-apple-darwin20.6.0, compiled by Apple clang version 13.0.0 (clang-1300.0.29.30), 64-bit
+2025-09-01 22:54:14.080 BST [28287] LOG:  could not bind IPv6 address "::1": Address already in use
+2025-09-01 22:54:14.080 BST [28287] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2025-09-01 22:54:14.080 BST [28287] LOG:  could not bind IPv4 address "127.0.0.1": Address already in use
+2025-09-01 22:54:14.080 BST [28287] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2025-09-01 22:54:14.080 BST [28287] WARNING:  could not create listen socket for "localhost"
+2025-09-01 22:54:14.080 BST [28287] FATAL:  could not create any TCP/IP sockets
+2025-09-01 22:54:14.081 BST [28287] LOG:  database system is shut down
+2025-09-01 22:55:25.447 BST [28337] LOG:  starting PostgreSQL 14.19 (Homebrew) on x86_64-apple-darwin20.6.0, compiled by Apple clang version 13.0.0 (clang-1300.0.29.30), 64-bit
+2025-09-01 22:55:25.455 BST [28337] LOG:  could not bind IPv6 address "::1": Address already in use
+2025-09-01 22:55:25.455 BST [28337] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2025-09-01 22:55:25.455 BST [28337] LOG:  could not bind IPv4 address "127.0.0.1": Address already in use
+2025-09-01 22:55:25.455 BST [28337] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2025-09-01 22:55:25.455 BST [28337] WARNING:  could not create listen socket for "localhost"
+2025-09-01 22:55:25.455 BST [28337] FATAL:  could not create any TCP/IP sockets
+2025-09-01 22:55:25.456 BST [28337] LOG:  database system is shut down
