@@ -1,160 +1,180 @@
 package com.erdal.server;
 
-import com.erdal.repository.TaskRepository;
-import com.erdal.model.Task;
-import com.sun.net.httpserver.*;
+import com.erdal.databaseConnection.DatabaseConnection;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.sql.*;
 import java.util.*;
 
 public class Server {
+    public static void start() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+        System.out.println("✅ Server started at http://localhost:8000");
 
-    private static final int PORT = 8000;
-    private static final String FRONTEND_PATH = "TaskManagement"; // frontend klasörün
+        // Backend endpoint
+        server.createContext("/tasks", new TaskHandler());
+        server.createContext("/add", new TaskHandler());
+        server.createContext("/delete", new TaskHandler());
+        server.createContext("/update", new TaskHandler());
 
-    private final TaskRepository repo = new TaskRepository();
-
-    public void start() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
-
-        //  API endpointleri
-        server.createContext("/tasks", this::handleTasks);
-        server.createContext("/add", this::handleAdd);
-        server.createContext("/delete", this::handleDelete);
-
-        //  Frontend dosyaları (index.html, style.css, script.js)
-        server.createContext("/", this::handleFrontend);
-
-        server.setExecutor(null);
+        server.setExecutor(null); // default executor
         server.start();
-        System.out.println(" Server started at http://localhost:" + PORT);
     }
+}
 
-    // 🔹 Tüm görevleri listele
-    private void handleTasks(HttpExchange exchange) throws IOException {
-        if (!"GET".equals(exchange.getRequestMethod())) {
-            sendResponse(exchange, 405, "Method Not Allowed");
-            return;
-        }
-
-        List<Task> tasks = repo.findAll();
-        StringBuilder json = new StringBuilder("[");
-        for (int i = 0; i < tasks.size(); i++) {
-            Task t = tasks.get(i);
-            json.append(String.format("{\"id\":%d,\"title\":\"%s\",\"description\":\"%s\"}",
-                    t.getId(), escapeJson(t.getTitle()), escapeJson(t.getDescription())));
-            if (i < tasks.size() - 1) json.append(",");
-        }
-        json.append("]");
-
-        sendJson(exchange, 200, json.toString());
-    }
-
-    //  Yeni görev ekle
-    private void handleAdd(HttpExchange exchange) throws IOException {
-        if (!"POST".equals(exchange.getRequestMethod())) {
-            sendResponse(exchange, 405, "Method Not Allowed");
-            return;
-        }
-
-        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-        Map<String, String> params = parseParams(body);
-
-        String title = params.getOrDefault("title", "");
-        String desc = params.getOrDefault("desc", "");
-
-        if (!title.isEmpty()) {
-            repo.add(new Task(title, desc));
-            sendResponse(exchange, 200, "Added");
-        } else {
-            sendResponse(exchange, 400, "Title required");
-        }
-    }
-
-    //  Görev sil
-    private void handleDelete(HttpExchange exchange) throws IOException {
-        if (!"POST".equals(exchange.getRequestMethod())) {
-            sendResponse(exchange, 405, "Method Not Allowed");
-            return;
-        }
-
-        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-        Map<String, String> params = parseParams(body);
+class TaskHandler implements HttpHandler {
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        String method = exchange.getRequestMethod();
 
         try {
-            int id = Integer.parseInt(params.getOrDefault("id", "0"));
-            boolean ok = repo.deleteById(id);
-            sendResponse(exchange, ok ? 200 : 404, ok ? "Deleted" : "Not Found");
-        } catch (NumberFormatException e) {
-            sendResponse(exchange, 400, "Invalid ID");
+            if (path.equals("/tasks") && method.equalsIgnoreCase("GET")) {
+                handleGetTasks(exchange);
+            } else if (path.equals("/add") && method.equalsIgnoreCase("GET")) {
+                handleAddTask(exchange);
+            } else if (path.equals("/delete") && method.equalsIgnoreCase("GET")) {
+                handleDeleteTask(exchange);
+            } else if (path.equals("/update") && method.equalsIgnoreCase("GET")) {
+                handleUpdateTask(exchange);
+            } else {
+                sendResponse(exchange, "404 Not Found");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendResponse(exchange, "500 Internal Server Error: " + e.getMessage());
         }
     }
 
-    // 🔹 Frontend dosyalarını yükle (index.html, css, js)
-    private void handleFrontend(HttpExchange exchange) throws IOException {
-        String path = exchange.getRequestURI().getPath();
-        if (path.equals("/")) path = "/index.html"; // default sayfa
+    // 🔹 Listeleme
+    private void handleGetTasks(HttpExchange exchange) throws Exception {
+        try (Connection conn = DatabaseConnection.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT id, title, description FROM tasks ORDER BY id")) {
 
-        Path filePath = Paths.get(FRONTEND_PATH + path).normalize();
-        if (!Files.exists(filePath)) {
-            sendResponse(exchange, 404, "Not Found");
+            List<Map<String, Object>> tasks = new ArrayList<>();
+            while (rs.next()) {
+                Map<String, Object> task = new HashMap<>();
+                task.put("id", rs.getInt("id"));
+                task.put("title", rs.getString("title"));
+                task.put("description", rs.getString("description"));
+                tasks.add(task);
+            }
+
+            String json = toJson(tasks);
+            sendJsonResponse(exchange, json);
+        }
+    }
+
+    // 🔹 Ekleme
+    private void handleAddTask(HttpExchange exchange) throws Exception {
+        Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
+        String title = params.get("title");
+        String desc = params.get("desc");
+
+        if(title == null || title.isEmpty()) {
+            sendResponse(exchange, "Title is required");
             return;
         }
 
-        String mime = guessMimeType(path);
-        byte[] bytes = Files.readAllBytes(filePath);
-
-        exchange.getResponseHeaders().add("Content-Type", mime);
-        exchange.sendResponseHeaders(200, bytes.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(bytes);
+        try (Connection conn = DatabaseConnection.connect()) {
+            String sql = "INSERT INTO tasks (title, description) VALUES (?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, title);
+            stmt.setString(2, desc);
+            stmt.executeUpdate();
         }
+        sendResponse(exchange, "Task added successfully");
     }
 
-    //  Yardımcı metodlar
-    private void sendResponse(HttpExchange exchange, int status, String text) throws IOException {
-        byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=utf-8");
-        exchange.sendResponseHeaders(status, bytes.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(bytes);
+    // 🔹 Silme
+    private void handleDeleteTask(HttpExchange exchange) throws Exception {
+        Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
+        int id = Integer.parseInt(params.get("id"));
+
+        try (Connection conn = DatabaseConnection.connect()) {
+            String sql = "DELETE FROM tasks WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
         }
+        sendResponse(exchange, "Task deleted successfully");
     }
 
-    private void sendJson(HttpExchange exchange, int status, String json) throws IOException {
-        byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(status, bytes.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(bytes);
-        }
-    }
+    // 🔹 Güncelleme
+    private void handleUpdateTask(HttpExchange exchange) throws Exception {
+        Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
+        int id = Integer.parseInt(params.get("id"));
+        String title = params.get("title");
+        String desc = params.get("desc");
 
-    private Map<String, String> parseParams(String body) {
-        Map<String, String> params = new HashMap<>();
-        for (String pair : body.split("&")) {
-            String[] kv = pair.split("=", 2);
-            if (kv.length == 2) {
-                String key = URLDecoder.decode(kv[0], StandardCharsets.UTF_8);
-                String val = URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
-                params.put(key, val);
+        try (Connection conn = DatabaseConnection.connect()) {
+            String sql = "UPDATE tasks SET title = ?, description = ? WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, title);
+            stmt.setString(2, desc);
+            stmt.setInt(3, id);
+
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                sendResponse(exchange, "Task updated successfully");
+            } else {
+                sendResponse(exchange, "Task not found");
             }
         }
-        return params;
     }
 
-    private String escapeJson(String s) {
-        return s.replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "");
+    // 🔹 JSON dönüşümü
+    private String toJson(List<Map<String, Object>> tasks) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < tasks.size(); i++) {
+            Map<String, Object> t = tasks.get(i);
+            sb.append("{")
+                    .append("\"id\":").append(t.get("id")).append(",")
+                    .append("\"title\":\"").append(t.get("title")).append("\",")
+                    .append("\"description\":\"").append(t.get("description")).append("\"")
+                    .append("}");
+            if (i < tasks.size() - 1) sb.append(",");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
-    private String guessMimeType(String path) {
-        if (path.endsWith(".html")) return "text/html; charset=utf-8";
-        if (path.endsWith(".css")) return "text/css; charset=utf-8";
-        if (path.endsWith(".js")) return "application/javascript; charset=utf-8";
-        return "application/octet-stream";
+    // 🔹 Query parser
+    private Map<String, String> queryToMap(String query) throws UnsupportedEncodingException {
+        Map<String, String> result = new HashMap<>();
+        if (query == null) return result;
+        for (String param : query.split("&")) {
+            String[] pair = param.split("=");
+            if (pair.length > 1) {
+                result.put(URLDecoder.decode(pair[0], StandardCharsets.UTF_8),
+                           URLDecoder.decode(pair[1], StandardCharsets.UTF_8));
+            }
+        }
+        return result;
+    }
+
+    // 🔹 Response helper
+    private void sendResponse(HttpExchange exchange, String response) throws IOException {
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.sendResponseHeaders(200, response.getBytes().length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(response.getBytes());
+        }
+    }
+
+    private void sendJsonResponse(HttpExchange exchange, String json) throws IOException {
+        exchange.getResponseHeaders().add("Content-Type", "application/json");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.sendResponseHeaders(200, json.getBytes().length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(json.getBytes());
+        }
     }
 }
