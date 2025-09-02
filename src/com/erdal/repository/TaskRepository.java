@@ -20,6 +20,7 @@ public class TaskRepository {
                 id SERIAL PRIMARY KEY,
                 title VARCHAR(255) NOT NULL,
                 description TEXT,
+                user_id INT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """;
@@ -61,7 +62,8 @@ public class TaskRepository {
                 Task task = new Task(
                         rs.getInt("id"),
                         rs.getString("title"),
-                        rs.getString("description")
+                        rs.getString("description"),
+                        rs.getInt("userId")
                 );
                 list.add(task);
             }
