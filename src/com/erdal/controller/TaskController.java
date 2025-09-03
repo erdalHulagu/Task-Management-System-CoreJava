@@ -42,6 +42,7 @@ public class TaskController {
         String title = sc.nextLine();
         System.out.print("Açıklama: ");
         String desc = sc.nextLine();
+       
         repo.add(new Task(title, desc));
     }
 
