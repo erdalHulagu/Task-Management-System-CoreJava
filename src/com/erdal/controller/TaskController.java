@@ -1,6 +1,6 @@
 package com.erdal.controller;
 
-import com.erdal.model.Task;                
+import com.erdal.model.Task;
 import com.erdal.repository.TaskRepository;
 
 import java.util.List;
@@ -8,47 +8,60 @@ import java.util.Scanner;
 
 public class TaskController {
 
-    private final TaskRepository repo = new TaskRepository(); //  Repository hazır
-    private final Scanner sc = new Scanner(System.in);        // 🔹
-    //  Ana menü başlat
+    private final TaskRepository repo = new TaskRepository();
+    private final Scanner sc = new Scanner(System.in);
+
+    private String currentUserId; // login sonrası hangi user ekliyor
+
+    // Kullanıcı ID'sini set et
+    public void setCurrentUserId(String userId) {
+        this.currentUserId = userId;
+    }
+
     public void start() {
         while (true) {
             System.out.println("\n=== Task Manager ===");
-            System.out.println("1) Ekle");
-            System.out.println("2) Listele");
-            System.out.println("3) Sil");
-            System.out.println("4) Güncelle");
+            System.out.println("1) Görev Ekle");
+            System.out.println("2) Görevleri Listele");
+            System.out.println("3) Görev Sil");
+            System.out.println("4) Görev Güncelle");
             System.out.println("5) Çık");
             System.out.print("Seçim: ");
 
             String choice = sc.nextLine();
             switch (choice) {
-                case "1" -> add();       // Ekle
-                case "2" -> list();      // Listele
-                case "3" -> delete();    // Sil
-                case "4" -> update();    // Güncelle
-                case "5" -> { 
-                    System.out.println("Görüşürüz!"); 
-                    return; 
+                case "1" -> add();
+                case "2" -> list();
+                case "3" -> delete();
+                case "4" -> update();
+                case "5" -> {
+                    System.out.println("Görüşürüz!");
+                    return;
                 }
-                default -> System.out.println(" Geçersiz seçim");
+                default -> System.out.println("Geçersiz seçim");
             }
         }
     }
 
-    // 🔹 Task ekleme
+    // Task ekleme
     private void add() {
+        if (currentUserId == null) {
+            System.out.println("❌ Önce giriş yapmalısınız!");
+            return;
+        }
+
         System.out.print("Başlık: ");
         String title = sc.nextLine();
         System.out.print("Açıklama: ");
         String desc = sc.nextLine();
-       
-        repo.add(new Task(title, desc));
+
+        Task task = new Task(title, desc, currentUserId);
+        repo.add(task);
     }
 
-    // 🔹 Task listeleme
+    // Task listeleme
     private void list() {
-        List<Task> tasks = repo.findAll();
+        List<Task> tasks = repo.findAllByUserId(currentUserId);
         if (tasks.isEmpty()) {
             System.out.println(" Kayıt yok.");
         } else {
@@ -56,26 +69,26 @@ public class TaskController {
         }
     }
 
-    // 🔹 Task silme
+    // Task silme
     private void delete() {
         System.out.print("Silinecek ID: ");
         try {
             int id = Integer.parseInt(sc.nextLine());
-            repo.deleteById(id);
+            repo.deleteById(id,currentUserId);
         } catch (NumberFormatException e) {
             System.out.println(" Lütfen sayı giriniz.");
         }
     }
 
-    // 🔹 Task güncelleme (sadece başlık)
+    // Task güncelleme
     private void update() {
         System.out.print("Güncellenecek ID: ");
         try {
             int id = Integer.parseInt(sc.nextLine());
             System.out.print("Yeni Başlık: ");
             String newTitle = sc.nextLine();
-            boolean ok = repo.updateTitle(id, newTitle);
-            System.out.println(ok ? " Güncellendi" : "!!!️ ID bulunamadı");
+            boolean ok = repo.updateTitle(id, newTitle, currentUserId);
+            System.out.println(ok ? " Güncellendi" : "!!!️ ID bulunamadı veya yetkiniz yok");
         } catch (NumberFormatException e) {
             System.out.println(" Lütfen sayı giriniz.");
         }

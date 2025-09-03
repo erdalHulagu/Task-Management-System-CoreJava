@@ -1,6 +1,10 @@
 package com.erdal.server;
 
 import com.erdal.databaseConnection.DatabaseConnection;
+import com.erdal.model.Task;
+import com.erdal.methods.MethodService;
+import com.erdal.methods.Methods;
+import com.erdal.repository.TaskRepository;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -9,7 +13,10 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.*;
 
 public class Server {
@@ -29,6 +36,10 @@ public class Server {
 }
 
 class TaskHandler implements HttpHandler {
+
+    private final TaskRepository repo = new TaskRepository();
+    private final MethodService methodService = new Methods(); // ID üretmek için
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
@@ -52,24 +63,28 @@ class TaskHandler implements HttpHandler {
         }
     }
 
-    // 🔹 Listeleme
+    // 🔹 Listeleme (userId ile filtrelenmiş)
     private void handleGetTasks(HttpExchange exchange) throws Exception {
-        try (Connection conn = DatabaseConnection.connect();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT id, title, description FROM tasks ORDER BY id")) {
-
-            List<Map<String, Object>> tasks = new ArrayList<>();
-            while (rs.next()) {
-                Map<String, Object> task = new HashMap<>();
-                task.put("id", rs.getInt("id"));
-                task.put("title", rs.getString("title"));
-                task.put("description", rs.getString("description"));
-                tasks.add(task);
-            }
-
-            String json = toJson(tasks);
-            sendJsonResponse(exchange, json);
+        Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
+        String userId = params.get("userId");
+        if (userId == null) {
+            sendResponse(exchange, "userId parametresi eksik");
+            return;
         }
+
+        List<Task> tasks = repo.findAllByUserId(userId);
+
+        List<Map<String, Object>> responseList = new ArrayList<>();
+        for (Task t : tasks) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", t.getId());
+            map.put("title", t.getTitle());
+            map.put("description", t.getDescription());
+            map.put("userId", t.getUserId());
+            responseList.add(map);
+        }
+
+        sendJsonResponse(exchange, toJson(responseList));
     }
 
     // 🔹 Ekleme
@@ -77,19 +92,15 @@ class TaskHandler implements HttpHandler {
         Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
         String title = params.get("title");
         String desc = params.get("desc");
+        String userId = params.get("userId");
 
-        if(title == null || title.isEmpty()) {
-            sendResponse(exchange, "Title is required");
+        if(title == null || title.isEmpty() || userId == null || userId.isEmpty()) {
+            sendResponse(exchange, "Title ve userId zorunlu");
             return;
         }
 
-        try (Connection conn = DatabaseConnection.connect()) {
-            String sql = "INSERT INTO tasks (title, description) VALUES (?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, title);
-            stmt.setString(2, desc);
-            stmt.executeUpdate();
-        }
+        Task task = new Task(title, desc, userId);
+        repo.add(task);
         sendResponse(exchange, "Task added successfully");
     }
 
@@ -97,14 +108,15 @@ class TaskHandler implements HttpHandler {
     private void handleDeleteTask(HttpExchange exchange) throws Exception {
         Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
         int id = Integer.parseInt(params.get("id"));
+        String userId = params.get("userId");
 
-        try (Connection conn = DatabaseConnection.connect()) {
-            String sql = "DELETE FROM tasks WHERE id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
+        if (userId == null) {
+            sendResponse(exchange, "userId parametresi eksik");
+            return;
         }
-        sendResponse(exchange, "Task deleted successfully");
+
+        boolean ok = repo.deleteById(id, userId);
+        sendResponse(exchange, ok ? "Task deleted successfully" : "Task not found / permission denied");
     }
 
     // 🔹 Güncelleme
@@ -113,24 +125,17 @@ class TaskHandler implements HttpHandler {
         int id = Integer.parseInt(params.get("id"));
         String title = params.get("title");
         String desc = params.get("desc");
+        String userId = params.get("userId");
 
-        try (Connection conn = DatabaseConnection.connect()) {
-            String sql = "UPDATE tasks SET title = ?, description = ? WHERE id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, title);
-            stmt.setString(2, desc);
-            stmt.setInt(3, id);
-
-            int rows = stmt.executeUpdate();
-            if (rows > 0) {
-                sendResponse(exchange, "Task updated successfully");
-            } else {
-                sendResponse(exchange, "Task not found");
-            }
+        if (userId == null) {
+            sendResponse(exchange, "userId parametresi eksik");
+            return;
         }
+
+        boolean ok = repo.updateTitle(id, title, userId);
+        sendResponse(exchange, ok ? "Task updated successfully" : "Task not found / permission denied");
     }
 
-    // 🔹 JSON dönüşümü
     private String toJson(List<Map<String, Object>> tasks) {
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < tasks.size(); i++) {
@@ -138,7 +143,8 @@ class TaskHandler implements HttpHandler {
             sb.append("{")
                     .append("\"id\":").append(t.get("id")).append(",")
                     .append("\"title\":\"").append(t.get("title")).append("\",")
-                    .append("\"description\":\"").append(t.get("description")).append("\"")
+                    .append("\"description\":\"").append(t.get("description")).append("\",")
+                    .append("\"userId\":\"").append(t.get("userId")).append("\"")
                     .append("}");
             if (i < tasks.size() - 1) sb.append(",");
         }
@@ -146,7 +152,6 @@ class TaskHandler implements HttpHandler {
         return sb.toString();
     }
 
-    // 🔹 Query parser
     private Map<String, String> queryToMap(String query) throws UnsupportedEncodingException {
         Map<String, String> result = new HashMap<>();
         if (query == null) return result;
@@ -154,13 +159,12 @@ class TaskHandler implements HttpHandler {
             String[] pair = param.split("=");
             if (pair.length > 1) {
                 result.put(URLDecoder.decode(pair[0], StandardCharsets.UTF_8),
-                           URLDecoder.decode(pair[1], StandardCharsets.UTF_8));
+                        URLDecoder.decode(pair[1], StandardCharsets.UTF_8));
             }
         }
         return result;
     }
 
-    // 🔹 Response helper
     private void sendResponse(HttpExchange exchange, String response) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.sendResponseHeaders(200, response.getBytes().length);

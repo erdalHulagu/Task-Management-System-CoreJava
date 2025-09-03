@@ -1,7 +1,7 @@
 package com.erdal.model;
 
 public class User {
-    private int id;
+    private String id;
     private String fullName;
     private String phone;
     private String gender;
@@ -12,7 +12,7 @@ public class User {
 	public User() {}
 
 
-	public User(int id, String fullName, String phone, String gender, String address, String email,
+	public User(String id, String fullName, String phone, String gender, String address, String email,
 			String password) {
 		super();
 		this.id = id;
@@ -23,14 +23,24 @@ public class User {
 		this.email = email;
 		this.password = password;
 	}
+	public User(String fullName, String phone, String gender, String address, String email,
+			String password) {
+		super();
+		this.fullName = fullName;
+		this.phone = phone;
+		this.gender = gender;
+		this.address = address;
+		this.email = email;
+		this.password = password;
+	}
 
 
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 
 
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

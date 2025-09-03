@@ -4,7 +4,7 @@ public class Task {
     private int id;                 // Not: DB’deki id kolonu
     private String title;           // Not: Görev başlığı
     private String description;
-    private int userId;
+    private String userId;
     
     // Not: Görev açıklaması
 
@@ -12,7 +12,7 @@ public class Task {
     public Task() {}
 
     // Parametreli constructor (tam nesne)
-    public Task(int id, String title, String description,int userId) {
+    public Task(int id, String title, String description,String userId) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -20,7 +20,7 @@ public class Task {
     }
 
     //  Parametreli constructor (ekleme için, id DB tarafından oluşturulacak)
-    public Task(String title, String description,int userId) {
+    public Task(String title, String description,String userId) {
         this.title = title;
         this.description = description;
         this.userId = userId;
@@ -51,11 +51,11 @@ public class Task {
 		this.description = description;
 	}
 
-	public int getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(int userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
