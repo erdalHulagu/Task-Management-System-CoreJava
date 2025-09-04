@@ -19,53 +19,45 @@ public class LoginHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
-            sendResponse(exchange, "Only POST method allowed");
-            return;
-        }
-
-        Map<String, String> params = queryToMap(new String(exchange.getRequestBody().readAllBytes()));
+        Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
         String email = params.get("email");
         String password = params.get("password");
 
-        if (email == null || password == null) {
-            sendResponse(exchange, "Email ve password gerekli");
+        if(email == null || password == null) {
+            sendResponse(exchange, "Eksik bilgiler!", 400);
             return;
         }
 
         Login login = new Login(email, password);
         User user = loginRepo.authenticate(login);
 
-        if (user != null) {
-            // Başarılı giriş, kullanıcı ID’sini dönebiliriz
-            sendResponse(exchange, "Login successful;userId=" + user.getId());
+        if(user != null) {
+            String json = String.format("{\"id\":\"%s\", \"fullName\":\"%s\"}", user.getId(), user.getFullName());
+            sendResponse(exchange, json, 200);
         } else {
-            sendResponse(exchange, "Geçersiz email veya şifre");
+            sendResponse(exchange, "Geçersiz email veya şifre", 401);
         }
     }
 
-    private void sendResponse(HttpExchange exchange, String response) throws IOException {
-        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        exchange.getResponseHeaders().add("Content-Type", "text/plain");
-        exchange.sendResponseHeaders(200, response.getBytes().length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(response.getBytes());
-        }
-    }
-
-    private Map<String, String> queryToMap(String query) throws IOException {
+    private Map<String, String> queryToMap(String query) {
         Map<String, String> result = new HashMap<>();
-        if (query == null || query.isEmpty()) return result;
-
-        String[] pairs = query.split("&");
-        for (String pair : pairs) {
-            String[] keyValue = pair.split("=");
-            if (keyValue.length > 1) {
-                result.put(URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8),
-                           URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8));
+        if(query == null) return result;
+        for(String param : query.split("&")) {
+            String[] pair = param.split("=");
+            if(pair.length > 1) {
+                result.put(URLDecoder.decode(pair[0], StandardCharsets.UTF_8),
+                           URLDecoder.decode(pair[1], StandardCharsets.UTF_8));
             }
         }
         return result;
     }
-}
 
+    private void sendResponse(HttpExchange exchange, String response, int code) throws IOException {
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Content-Type", "application/json");
+        exchange.sendResponseHeaders(code, response.getBytes().length);
+        try(OutputStream os = exchange.getResponseBody()) {
+            os.write(response.getBytes());
+        }
+    }
+}
