@@ -78,9 +78,9 @@ public class UserController {
         User user = repo.login(email, password);
         if (user != null) {
             currentUserId = user.getId();
-            System.out.println("✅ Giriş başarılı! Hoşgeldin, " + user.getFullName());
+            System.out.println(" Giriş başarılı! Hoşgeldin, " + user.getFullName());
         } else {
-            System.out.println("❌ Geçersiz email veya şifre");
+            System.out.println("Geçersiz email veya şifre");
         }
     }
 }

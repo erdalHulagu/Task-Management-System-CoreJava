@@ -46,7 +46,7 @@ public class TaskController {
     // Task ekleme
     private void add() {
         if (currentUserId == null) {
-            System.out.println("❌ Önce giriş yapmalısınız!");
+            System.out.println(" Önce giriş yapmalısınız!");
             return;
         }
 
