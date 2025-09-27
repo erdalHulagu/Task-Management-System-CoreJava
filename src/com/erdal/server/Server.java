@@ -3,6 +3,7 @@ package com.erdal.server;
 import com.erdal.server.handler.LoginHandler;
 import com.erdal.server.handler.RegisterHandler;
 import com.erdal.server.handler.TaskHandler;
+import com.erdal.server.handler.UserHandler;
 import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
 
@@ -18,6 +19,7 @@ public class Server {
         server.createContext("/add", new TaskHandler());
         server.createContext("/delete", new TaskHandler());
         server.createContext("/update", new TaskHandler());
+        server.createContext("/user", new UserHandler());
 
         server.setExecutor(null);
         server.start();

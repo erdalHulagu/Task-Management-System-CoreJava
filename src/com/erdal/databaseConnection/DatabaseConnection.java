@@ -20,7 +20,7 @@ public class DatabaseConnection {
         // 🔹 Database bilgilerini yazdır (opsiyonel)
         try {
             DatabaseMetaData meta = conn.getMetaData();
-            System.out.println("✅ Connected to: " + meta.getDatabaseProductName() +
+            System.out.println(" Connected to: " + meta.getDatabaseProductName() +
                                " / " + meta.getDatabaseProductVersion());
         } catch (Exception ignore) {
             // Hata olsa da yutuyoruz, metaData sadece bilgi amaçlı

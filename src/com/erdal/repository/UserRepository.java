@@ -119,4 +119,57 @@ public class UserRepository {
         }
         return list;
     }
+
+    public User findById(String id) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return new User(
+                        rs.getString("id"),
+                        rs.getString("full_name"),
+                        rs.getString("phone"),
+                        rs.getString("gender"),
+                        rs.getString("address"),
+                        rs.getString("email"),
+                        rs.getString("password")
+                );
+            }
+
+        } catch (SQLException e) {
+            System.out.println("findById hatası: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    public boolean updateField(String id, String field, String value) {
+        String column;
+        switch (field) {
+            case "fullName" -> column = "full_name";
+            case "phone" -> column = "phone";
+            case "gender" -> column = "gender";
+            case "address" -> column = "address";
+            default -> {
+                System.out.println(" Geçersiz alan: " + field);
+                return false;
+            }
+        }
+
+        String sql = "UPDATE users SET " + column + " = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, value);
+            ps.setString(2, id);
+            int updated = ps.executeUpdate();
+            return updated > 0;
+        } catch (SQLException e) {
+            System.out.println(" updateField hatası: " + e.getMessage());
+            return false;
+        }
+    }
+
 }
