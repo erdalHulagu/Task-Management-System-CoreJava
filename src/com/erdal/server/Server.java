@@ -20,6 +20,7 @@ public class Server {
         server.createContext("/delete", new TaskHandler());
         server.createContext("/update", new TaskHandler());
         server.createContext("/user", new UserHandler());
+        server.createContext("/updateUser", new UserHandler());
 
         server.setExecutor(null);
         server.start();

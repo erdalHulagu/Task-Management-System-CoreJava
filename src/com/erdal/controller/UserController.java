@@ -22,7 +22,8 @@ public class UserController {
             System.out.println("1) Kullanıcı Ekle");
             System.out.println("2) Kullanıcıları Listele");
             System.out.println("3) Login");
-            System.out.println("4) Çıkış");
+            System.out.println("4) Kullanıcı Güncelle");
+            System.out.println("5) Çıkış");
             System.out.print("Seçim: ");
 
             String choice = sc.nextLine();
@@ -30,7 +31,8 @@ public class UserController {
                 case "1" -> addUser();
                 case "2" -> listUsers();
                 case "3" -> login();
-                case "4" -> {
+                case "4" -> updateUser();
+                case "5" -> {
                     System.out.println("Görüşürüz!");
                     return;
                 }
@@ -81,6 +83,25 @@ public class UserController {
             System.out.println(" Giriş başarılı! Hoşgeldin, " + user.getFullName());
         } else {
             System.out.println("Geçersiz email veya şifre");
+        }
+    }
+
+    // Kullanıcı güncelleme
+    private void updateUser() {
+        System.out.print("Güncellenecek Kullanıcı ID: ");
+        String id = sc.nextLine();
+
+        System.out.println("Hangi alanı güncellemek istiyorsun? (fullName/phone/gender/address)");
+        String field = sc.nextLine();
+
+        System.out.print("Yeni değer: ");
+        String value = sc.nextLine();
+
+        boolean success = repo.updateField(id, field, value);
+        if (success) {
+            System.out.println(" Güncelleme başarılı!");
+        } else {
+            System.out.println(" Güncelleme başarısız.");
         }
     }
 }
