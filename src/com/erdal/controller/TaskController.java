@@ -54,8 +54,10 @@ public class TaskController {
         String title = sc.nextLine();
         System.out.print("Açıklama: ");
         String desc = sc.nextLine();
+        System.out.print("Tarih: ");
+        String tarih = sc.nextLine();
 
-        Task task = new Task(title, desc, currentUserId);
+        Task task = new Task(title, desc, currentUserId,tarih);
         repo.add(task);
     }
 

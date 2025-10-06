@@ -52,7 +52,7 @@ public class TaskRepository {
     // Kullanıcıya ait tüm task'leri listele
     public List<Task> findAllByUserId(String userId) {
         List<Task> list = new ArrayList<>();
-        String sql = "SELECT id, title, description FROM tasks WHERE user_id = ? ORDER BY id";
+        String sql = "SELECT id, title, description,taskTime FROM tasks WHERE user_id = ? ORDER BY id";
 
         try (Connection conn = DatabaseConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -65,6 +65,7 @@ public class TaskRepository {
                         rs.getInt("id"),
                         rs.getString("title"),
                         rs.getString("description"),
+                        rs.getDate("taskTime").toLocalDate()
                         userId
                 );
                 list.add(task);

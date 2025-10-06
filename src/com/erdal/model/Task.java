@@ -1,10 +1,13 @@
 package com.erdal.model;
 
+import java.sql.Date;
+
 public class Task {
     private int id;                 // Not: DB’deki id kolonu
     private String title;           // Not: Görev başlığı
     private String description;
     private String userId;
+    private Date taskTime;
     
     // Not: Görev açıklaması
 
@@ -12,20 +15,30 @@ public class Task {
     public Task() {}
 
     // Parametreli constructor (tam nesne)
-    public Task(int id, String title, String description,String userId) {
+    public Task(int id, String title, String description,String userId, Date taskTime) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.userId = userId;
+        this.taskTime=taskTime;
     }
 
     //  Parametreli constructor (ekleme için, id DB tarafından oluşturulacak)
-    public Task(String title, String description,String userId) {
+    public Task(String title, String description,String userId, Date taskTime) {
         this.title = title;
         this.description = description;
         this.userId = userId;
+        this.taskTime=taskTime;
         
     }
+
+	public Date getTaskTime() {
+		return taskTime;
+	}
+
+	public void setTaskTime(Date taskTime) {
+		this.taskTime = taskTime;
+	}
 
 	public int getId() {
 		return id;
@@ -58,11 +71,13 @@ public class Task {
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
+	
+	
 
 	@Override
 	public String toString() {
 		return "Task [id=" + id + ", title=" + title + ", description=" + description + ", userId=" + userId
-				+ ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getDescription()=" + getDescription()
+				+ ", getId()=" + getId() +", taskTime=" + taskTime+ ", getTitle()=" + getTitle() + ", getDescription()=" + getDescription()
 				+ ", getUserId()=" + getUserId() + ", getClass()=" + getClass() + ", hashCode()=" + hashCode()
 				+ ", toString()=" + super.toString() + "]";
 	}

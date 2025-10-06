@@ -13,12 +13,12 @@ public class UserRepository {
 
     private final MethodService methodService = new Methods();
 
-    // Constructor’da tablo kontrolü
+    // constructor table control
     public UserRepository() {
         ensureTable();
     }
 
-    // Tablo yoksa oluştur
+    // If no table, create one
     private void ensureTable() {
         String sql = """
             CREATE TABLE IF NOT EXISTS users (
@@ -36,13 +36,13 @@ public class UserRepository {
         try (Connection conn = DatabaseConnection.connect();
              Statement st = conn.createStatement()) {
             st.execute(sql);
-            System.out.println("✅ Users tablosu hazır.");
+            System.out.println(" User table is ready.");
         } catch (SQLException e) {
-            System.out.println("❌ Users tablosu oluşturulamadı: " + e.getMessage());
+            System.out.println("Could not create users table : " + e.getMessage());
         }
     }
 
-    // Kullanıcı ekleme
+    // adding user
     public void register(User user) {
         String sql = "INSERT INTO users (id, full_name, phone, gender, address, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.connect();
@@ -58,14 +58,14 @@ public class UserRepository {
             ps.setString(7, user.getPassword());
 
             ps.executeUpdate();
-            System.out.println("Kullanıcı eklendi: " + user.getFullName() + " (ID: " + userId + ")");
+            System.out.println("User added: " + user.getFullName() + " (ID: " + userId + ")");
 
         } catch (SQLException e) {
-            System.out.println("Kullanıcı ekleme hatası: " + e.getMessage());
+            System.out.println("Adding user error: " + e.getMessage());
         }
     }
 
-    // Email + Password ile login
+    //Login by Email + Password 
     public User login(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
         try (Connection conn = DatabaseConnection.connect();
@@ -87,12 +87,12 @@ public class UserRepository {
                 );
             }
         } catch (SQLException e) {
-            System.out.println("Login hatası: " + e.getMessage());
+            System.out.println("Login error: " + e.getMessage());
         }
         return null;
     }
 
-    // Tüm kullanıcıları listele
+    // List all users
     public List<User> findAll() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM users ORDER BY full_name";
@@ -115,7 +115,7 @@ public class UserRepository {
             }
 
         } catch (SQLException e) {
-            System.out.println("Listeleme hatası: " + e.getMessage());
+            System.out.println("List error: " + e.getMessage());
         }
         return list;
     }
@@ -141,7 +141,7 @@ public class UserRepository {
             }
 
         } catch (SQLException e) {
-            System.out.println("findById hatası: " + e.getMessage());
+            System.out.println("findById error: " + e.getMessage());
         }
         return null;
     }
@@ -154,7 +154,7 @@ public class UserRepository {
             case "gender" -> column = "gender";
             case "address" -> column = "address";
             default -> {
-                System.out.println(" Geçersiz alan: " + field);
+                System.out.println(" Invalid field: " + field);
                 return false;
             }
         }
@@ -167,7 +167,7 @@ public class UserRepository {
             int updated = ps.executeUpdate();
             return updated > 0;
         } catch (SQLException e) {
-            System.out.println(" updateField hatası: " + e.getMessage());
+            System.out.println(" updateField error: " + e.getMessage());
             return false;
         }
     }
