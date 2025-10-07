@@ -114,7 +114,7 @@ public class TaskController {
             }
 
             
-            boolean ok = repo.updateTitle(id, newTitle, currentUserId,taskTime);
+            boolean ok = repo.updateTitleAndTime(id, newTitle, taskTime,currentUserId);
             System.out.println(ok ? " Güncellendi" : "!!!️ ID bulunamadı veya yetkiniz yok");
         } catch (NumberFormatException e) {
             System.out.println(" Lütfen sayı giriniz.");

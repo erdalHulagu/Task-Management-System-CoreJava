@@ -100,15 +100,40 @@ public class TaskHandler implements HttpHandler {
         sendResponse(exchange, ok ? "Task deleted" : "Not found / permission denied", 200);
     }
 
-    private void handleUpdateTask(HttpExchange exchange, Map<String,String> params) throws IOException {
+    private void handleUpdateTask(HttpExchange exchange, Map<String, String> params) throws IOException {
         String userId = params.get("userId");
-        int id = Integer.parseInt(params.get("id"));
+        String idStr = params.get("id");
         String title = params.get("title");
-        String desc = params.get("desc");
+        String desc = params.get("desc"); // still unused, but you can add later if needed
+        String timeParam = params.get("taskTime");
 
-        boolean ok = repo.updateTitle(id, title, userId);
+        if (userId == null || idStr == null || title == null) {
+            sendResponse(exchange, "userId, id ve title gerekli", 400);
+            return;
+        }
+
+        int id;
+        try {
+            id = Integer.parseInt(idStr);
+        } catch (NumberFormatException e) {
+            sendResponse(exchange, "Geçersiz id formatı", 400);
+            return;
+        }
+
+        LocalDate taskTime = null;
+        if (timeParam != null && !timeParam.isEmpty()) {
+            try {
+                taskTime = LocalDate.parse(timeParam); // expects "2025-10-07T15:30"
+            } catch (DateTimeParseException e) {
+                sendResponse(exchange, "Geçersiz tarih formatı. Beklenen: yyyy-MM-ddTHH:mm", 400);
+                return;
+            }
+        }
+
+        boolean ok = repo.updateTitleAndTime(id, title, taskTime, userId);
         sendResponse(exchange, ok ? "Task updated" : "Not found / permission denied", 200);
     }
+
 
     private String toJson(List<Map<String,Object>> tasks) {
         StringBuilder sb = new StringBuilder("[");
