@@ -4,6 +4,7 @@ import com.erdal.databaseConnection.DatabaseConnection;
 import com.erdal.model.Task;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,13 +35,16 @@ public class TaskRepository {
 
     // Task ekleme
     public void add(Task task) {
-        String sql = "INSERT INTO tasks (title, description, user_id) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO tasks (title, description, user_id,taskTime) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, task.getTitle());
             ps.setString(2, task.getDescription());
             ps.setString(3, task.getUserId());
+            ps.setObject(4, task.getTaskTime());
+            
+       
             ps.executeUpdate();
             System.out.println("Task eklendi: " + task.getTitle());
 
@@ -65,7 +69,7 @@ public class TaskRepository {
                         rs.getInt("id"),
                         rs.getString("title"),
                         rs.getString("description"),
-                        rs.getDate("taskTime").toLocalDate()
+                        rs.getDate("taskTime").toLocalDate(),
                         userId
                 );
                 list.add(task);
@@ -97,16 +101,26 @@ public class TaskRepository {
     }
 
     // Task güncelleme (sadece başlık, user kontrolü ile)
-    public boolean updateTitle(int id, String newTitle, String userId) {
-        String sql = "UPDATE tasks SET title = ? WHERE id = ? AND user_id = ?";
+    public boolean updateTitleAndTime(int id, String newTitle, LocalDate newTime, String userId) {
+        String sql = "UPDATE tasks SET title = ?, taskTime = ? WHERE id = ? AND user_id = ?";
+
         try (Connection conn = DatabaseConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, newTitle);
-            ps.setInt(2, id);
-            ps.setString(3, userId);
+            ps.setObject(2, newTime);  // Modern JDBC handles LocalDateTime automatically
+            ps.setInt(3, id);
+            ps.setString(4, userId);
 
-            return ps.executeUpdate() > 0;
+            int rowsUpdated = ps.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                System.out.println("Başlık ve tarih güncellendi: " + newTitle + " | " + newTime);
+                return true;
+            } else {
+                System.out.println("Güncellenecek görev bulunamadı.");
+                return false;
+            }
 
         } catch (SQLException e) {
             System.out.println("Güncelleme hatası: " + e.getMessage());

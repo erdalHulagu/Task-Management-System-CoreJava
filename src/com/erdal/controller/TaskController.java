@@ -3,6 +3,9 @@ package com.erdal.controller;
 import com.erdal.model.Task;
 import com.erdal.repository.TaskRepository;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -56,8 +59,17 @@ public class TaskController {
         String desc = sc.nextLine();
         System.out.print("Tarih: ");
         String tarih = sc.nextLine();
+        
+        LocalDate taskTime = null;
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            taskTime = LocalDate.parse(tarih, formatter);
+        } catch (DateTimeParseException e) {
+            System.out.println("Geçersiz tarih formatı! Lütfen 'yyyy-MM-dd HH:mm' formatında girin.");
+            return;
+        }
 
-        Task task = new Task(title, desc, currentUserId,tarih);
+        Task task = new Task(title, desc, currentUserId,taskTime);
         repo.add(task);
     }
 
@@ -89,7 +101,20 @@ public class TaskController {
             int id = Integer.parseInt(sc.nextLine());
             System.out.print("Yeni Başlık: ");
             String newTitle = sc.nextLine();
-            boolean ok = repo.updateTitle(id, newTitle, currentUserId);
+            System.out.print("Tarih: ");
+            String tarih = sc.nextLine();
+            
+            LocalDate taskTime = null;
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                taskTime = LocalDate.parse(tarih, formatter);
+            } catch (DateTimeParseException e) {
+                System.out.println("Geçersiz tarih formatı! Lütfen 'yyyy-MM-dd HH:mm' formatında girin.");
+                return;
+            }
+
+            
+            boolean ok = repo.updateTitle(id, newTitle, currentUserId,taskTime);
             System.out.println(ok ? " Güncellendi" : "!!!️ ID bulunamadı veya yetkiniz yok");
         } catch (NumberFormatException e) {
             System.out.println(" Lütfen sayı giriniz.");

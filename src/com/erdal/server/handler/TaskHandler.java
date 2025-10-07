@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class TaskHandler implements HttpHandler {
@@ -63,14 +66,28 @@ public class TaskHandler implements HttpHandler {
         sendResponse(exchange, toJson(list), 200);
     }
 
-    private void handleAddTask(HttpExchange exchange, Map<String,String> params) throws IOException {
+    private void handleAddTask(HttpExchange exchange, Map<String, String> params) throws IOException {
         String title = params.get("title");
         String desc = params.get("desc");
         String userId = params.get("userId");
+        String timeParam = params.get("taskTime"); // fix typo
 
-        if(title == null || userId == null) { sendResponse(exchange, "title ve userId gerekli", 400); return; }
+        if (title == null || userId == null) {
+            sendResponse(exchange, "title ve userId gerekli", 400);
+            return;
+        }
 
-        Task task = new Task(title, desc, userId);
+        LocalDate taskTime = null;
+        if (timeParam != null && !timeParam.isEmpty()) {
+            try {
+                taskTime = LocalDate.parse(timeParam);
+            } catch (DateTimeParseException e) {
+                sendResponse(exchange, "Geçersiz tarih formatı. Beklenen format: 2025-10-07T15:30:00", 400);
+                return;
+            }
+        }
+
+        Task task = new Task(title, desc, userId, taskTime);
         repo.add(task);
         sendResponse(exchange, "Task added", 200);
     }

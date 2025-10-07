@@ -1,21 +1,21 @@
 package com.erdal.model;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 public class Task {
     private int id;                 // Not: DB’deki id kolonu
     private String title;           // Not: Görev başlığı
     private String description;
     private String userId;
-    private Date taskTime;
+    private LocalDate taskTime;
     
     // Not: Görev açıklaması
 
     //  Boş constructor (JDBC için gerekli)
-    public Task() {}
+   
 
     // Parametreli constructor (tam nesne)
-    public Task(int id, String title, String description,String userId, Date taskTime) {
+    public Task(int id, String title, String description, LocalDate taskTime,String userId) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -24,7 +24,7 @@ public class Task {
     }
 
     //  Parametreli constructor (ekleme için, id DB tarafından oluşturulacak)
-    public Task(String title, String description,String userId, Date taskTime) {
+    public Task(String title, String description,String userId, LocalDate taskTime) {
         this.title = title;
         this.description = description;
         this.userId = userId;
@@ -32,11 +32,14 @@ public class Task {
         
     }
 
-	public Date getTaskTime() {
+	
+
+
+	public LocalDate getTaskTime() {
 		return taskTime;
 	}
 
-	public void setTaskTime(Date taskTime) {
+	public void setTaskTime(LocalDate taskTime) {
 		this.taskTime = taskTime;
 	}
 
