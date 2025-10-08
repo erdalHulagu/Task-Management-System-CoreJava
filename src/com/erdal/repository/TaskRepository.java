@@ -10,121 +10,112 @@ import java.util.List;
 
 public class TaskRepository {
 
-    public TaskRepository() {
-        ensureTable();
-    }
+	public TaskRepository() {
+		ensureTable();
+	}
 
-    private void ensureTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS tasks (
-                id SERIAL PRIMARY KEY,
-                title VARCHAR(255) NOT NULL,
-                description TEXT,
-                user_id VARCHAR(8) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            """;
+	private void ensureTable() {
+		String sql = """
+				       CREATE TABLE IF NOT EXISTS tasks (
+				id SERIAL PRIMARY KEY,
+				title VARCHAR(255) NOT NULL,
+				description TEXT,
+				user_id VARCHAR(8) NOT NULL,
+				taskTime TIMESTAMP,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+				        )
+				        """;
 
-        try (Connection conn = DatabaseConnection.connect();
-             Statement st = conn.createStatement()) {
-            st.execute(sql);
-        } catch (SQLException e) {
-            System.out.println("Tablo oluşturulamadı: " + e.getMessage());
-        }
-    }
+		try (Connection conn = DatabaseConnection.connect(); Statement st = conn.createStatement()) {
+			st.execute(sql);
+		} catch (SQLException e) {
+			System.out.println("Tablo oluşturulamadı: " + e.getMessage());
+		}
+	}
 
-    // Task ekleme
-    public void add(Task task) {
-        String sql = "INSERT INTO tasks (title, description, user_id,taskTime) VALUES (?, ?, ?)";
-        try (Connection conn = DatabaseConnection.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+	// Task ekleme
+	public void add(Task task) {
+		String sql = "INSERT INTO tasks (title, description, user_id, taskTime) VALUES (?, ?, ?, ?)";
 
-            ps.setString(1, task.getTitle());
-            ps.setString(2, task.getDescription());
-            ps.setString(3, task.getUserId());
-            ps.setObject(4, task.getTaskTime());
-            
-       
-            ps.executeUpdate();
-            System.out.println("Task eklendi: " + task.getTitle());
+		try (Connection conn = DatabaseConnection.connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        } catch (SQLException e) {
-            System.out.println("Ekleme hatası: " + e.getMessage());
-        }
-    }
+			ps.setString(1, task.getTitle());
+			ps.setString(2, task.getDescription());
+			ps.setString(3, task.getUserId());
+			ps.setObject(4, task.getTaskTime());
 
-    // Kullanıcıya ait tüm task'leri listele
-    public List<Task> findAllByUserId(String userId) {
-        List<Task> list = new ArrayList<>();
-        String sql = "SELECT id, title, description,taskTime FROM tasks WHERE user_id = ? ORDER BY id";
+			ps.executeUpdate();
+			System.out.println("Task eklendi: " + task.getTitle());
 
-        try (Connection conn = DatabaseConnection.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+		} catch (SQLException e) {
+			System.out.println("Ekleme hatası: " + e.getMessage());
+		}
+	}
 
-            ps.setString(1, userId);
-            ResultSet rs = ps.executeQuery();
+	// Kullanıcıya ait tüm task'leri listele
+	public List<Task> findAllByUserId(String userId) {
+		List<Task> list = new ArrayList<>();
+		String sql = "SELECT id, title, description,taskTime FROM tasks WHERE user_id = ? ORDER BY id";
 
-            while (rs.next()) {
-                Task task = new Task(
-                        rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getDate("taskTime").toLocalDate(),
-                        userId
-                );
-                list.add(task);
-            }
+		try (Connection conn = DatabaseConnection.connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        } catch (SQLException e) {
-            System.out.println("Listeleme hatası: " + e.getMessage());
-        }
+			ps.setString(1, userId);
+			ResultSet rs = ps.executeQuery();
 
-        return list;
-    }
+			while (rs.next()) {
+				Task task = new Task(rs.getInt("id"), rs.getString("title"), rs.getString("description"),
+						rs.getDate("taskTime").toLocalDate(), userId);
+				list.add(task);
+			}
 
-    // Task silme (user kontrolü ile)
-    public boolean deleteById(int id, String userId) {
-        String sql = "DELETE FROM tasks WHERE id = ? AND user_id = ?";
-        try (Connection conn = DatabaseConnection.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+		} catch (SQLException e) {
+			System.out.println("Listeleme hatası: " + e.getMessage());
+		}
 
-            ps.setInt(1, id);
-            ps.setString(2, userId);
-            int affected = ps.executeUpdate();
-            System.out.println(affected > 0 ? "Silindi: " + id : " Bulunamadı veya yetkiniz yok: " + id);
-            return affected > 0;
+		return list;
+	}
 
-        } catch (SQLException e) {
-            System.out.println("Silme hatası: " + e.getMessage());
-            return false;
-        }
-    }
+	// Task silme (user kontrolü ile)
+	public boolean deleteById(int id, String userId) {
+		String sql = "DELETE FROM tasks WHERE id = ? AND user_id = ?";
+		try (Connection conn = DatabaseConnection.connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-    // Task güncelleme (sadece başlık, user kontrolü ile)
-    public boolean updateTitleAndTime(int id, String newTitle, LocalDate newTime, String userId) {
-        String sql = "UPDATE tasks SET title = ?, taskTime = ? WHERE id = ? AND user_id = ?";
+			ps.setInt(1, id);
+			ps.setString(2, userId);
+			int affected = ps.executeUpdate();
+			System.out.println(affected > 0 ? "Silindi: " + id : " Bulunamadı veya yetkiniz yok: " + id);
+			return affected > 0;
 
-        try (Connection conn = DatabaseConnection.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+		} catch (SQLException e) {
+			System.out.println("Silme hatası: " + e.getMessage());
+			return false;
+		}
+	}
 
-            ps.setString(1, newTitle);
-            ps.setObject(2, newTime);  // Modern JDBC handles LocalDateTime automatically
-            ps.setInt(3, id);
-            ps.setString(4, userId);
+	// Task güncelleme (sadece başlık, user kontrolü ile)
+	public boolean updateTitleAndTime(int id, String newTitle, LocalDate newTime, String userId) {
+		String sql = "UPDATE tasks SET title = ?, taskTime = ? WHERE id = ? AND user_id = ?";
 
-            int rowsUpdated = ps.executeUpdate();
+		try (Connection conn = DatabaseConnection.connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            if (rowsUpdated > 0) {
-                System.out.println("Başlık ve tarih güncellendi: " + newTitle + " | " + newTime);
-                return true;
-            } else {
-                System.out.println("Güncellenecek görev bulunamadı.");
-                return false;
-            }
+			ps.setString(1, newTitle);
+			ps.setObject(2, newTime); // Modern JDBC handles LocalDateTime automatically
+			ps.setInt(3, id);
+			ps.setString(4, userId);
 
-        } catch (SQLException e) {
-            System.out.println("Güncelleme hatası: " + e.getMessage());
-            return false;
-        }
-    }
+			int rowsUpdated = ps.executeUpdate();
+
+			if (rowsUpdated > 0) {
+				System.out.println("Başlık ve tarih güncellendi: " + newTitle + " | " + newTime);
+				return true;
+			} else {
+				System.out.println("Güncellenecek görev bulunamadı.");
+				return false;
+			}
+
+		} catch (SQLException e) {
+			System.out.println("Güncelleme hatası: " + e.getMessage());
+			return false;
+		}
+	}
 }

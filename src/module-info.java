@@ -7,7 +7,9 @@
 module taskmanagement {
     requires java.sql; 
     requires jdk.httpserver;//  JDBC sınıflarını (Connection, DriverManager vs.) kullanmak için
-    requires org.postgresql.jdbc; 
+    requires org.postgresql.jdbc;
+
+ 
 
 
 }

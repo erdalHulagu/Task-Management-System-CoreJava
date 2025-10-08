@@ -8,20 +8,20 @@ import java.sql.SQLException;     // Hata yakalamak için
 
 public class DatabaseConnection {
 
-    // 🔹 PostgreSQL bağlantı bilgileri (kendine göre düzenle)
+    //  PostgreSQL bağlantı bilgileri (kendine göre düzenle)
     private static final String URL = "jdbc:postgresql://localhost:5432/taskdb"; // DB adı taskdb
     private static final String USER = "postgres";                   // Kullanıcı adı
     private static final String PASSWORD = "password";                        // Şifre
 
-    // 🔹 Bağlantı metodu
+    //  Bağlantı metodu
     public static Connection connect() throws SQLException {
         Connection conn = DriverManager.getConnection(URL, USER, PASSWORD); // Bağlantıyı aç
 
-        // 🔹 Database bilgilerini yazdır (opsiyonel)
+        //  Database bilgilerini yazdır (opsiyonel)
         try {
-            DatabaseMetaData meta = conn.getMetaData();
-            System.out.println(" Connected to: " + meta.getDatabaseProductName() +
-                               " / " + meta.getDatabaseProductVersion());
+            DatabaseMetaData dbData = conn.getMetaData();
+            System.out.println(" Connected to: " + dbData.getDatabaseProductName() +
+                               " / " + dbData.getDatabaseProductVersion());
         } catch (Exception ignore) {
             // Hata olsa da yutuyoruz, metaData sadece bilgi amaçlı
         }

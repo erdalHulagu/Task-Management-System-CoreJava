@@ -25,6 +25,8 @@ public class UserHandler implements HttpHandler {
         h.add("Access-Control-Allow-Origin", "*");
         h.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         h.add("Access-Control-Allow-Headers", "Content-Type");
+       
+
 
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
             exchange.sendResponseHeaders(204, -1);
