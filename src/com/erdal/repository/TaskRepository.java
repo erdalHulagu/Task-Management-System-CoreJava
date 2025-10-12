@@ -61,12 +61,15 @@ public class TaskRepository {
 
 			ps.setString(1, userId);
 			ResultSet rs = ps.executeQuery();
-
 			while (rs.next()) {
-				Task task = new Task(rs.getInt("id"), rs.getString("title"), rs.getString("description"),
-						rs.getDate("taskTime").toLocalDate(), userId);
-				list.add(task);
+			    java.sql.Date sqlDate = rs.getDate("taskTime");
+			    LocalDate taskTime = (sqlDate != null) ? sqlDate.toLocalDate() : null;
+
+			    Task task = new Task(rs.getInt("id"), rs.getString("title"), rs.getString("description"),
+			                         taskTime, userId);
+			    list.add(task);
 			}
+
 
 		} catch (SQLException e) {
 			System.out.println("Listeleme hatası: " + e.getMessage());

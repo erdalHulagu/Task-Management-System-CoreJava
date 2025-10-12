@@ -57,20 +57,26 @@ public class TaskController {
         String title = sc.nextLine();
         System.out.print("Açıklama: ");
         String desc = sc.nextLine();
-        System.out.print("Tarih: ");
+        System.out.print("Tarih (yyyy-MM-dd): ");
         String tarih = sc.nextLine();
         
         LocalDate taskTime = null;
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             taskTime = LocalDate.parse(tarih, formatter);
         } catch (DateTimeParseException e) {
-            System.out.println("Geçersiz tarih formatı! Lütfen 'yyyy-MM-dd HH:mm' formatında girin.");
+            System.out.println("Geçersiz tarih formatı! Lütfen 'yyyy-MM-dd' formatında girin.");
             return;
         }
 
-        Task task = new Task(title, desc, currentUserId,taskTime);
+        Task task = new Task(title, desc, currentUserId, taskTime);
         repo.add(task);
+        scheduleNotification(task);
+
+        // Tarih geldiğinde email simülasyonu
+        if(taskTime.equals(LocalDate.now())) {
+            System.out.println("Email gönderildi: Görev bugün yapılacak -> " + task.getTitle());
+        }
     }
 
     // Task listeleme
@@ -101,23 +107,61 @@ public class TaskController {
             int id = Integer.parseInt(sc.nextLine());
             System.out.print("Yeni Başlık: ");
             String newTitle = sc.nextLine();
-            System.out.print("Tarih: ");
+            System.out.print("Tarih (yyyy-MM-dd): ");
             String tarih = sc.nextLine();
             
             LocalDate taskTime = null;
             try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 taskTime = LocalDate.parse(tarih, formatter);
             } catch (DateTimeParseException e) {
-                System.out.println("Geçersiz tarih formatı! Lütfen 'yyyy-MM-dd HH:mm' formatında girin.");
+                System.out.println("Geçersiz tarih formatı! Lütfen 'yyyy-MM-dd' formatında girin.");
                 return;
             }
 
-            
             boolean ok = repo.updateTitleAndTime(id, newTitle, taskTime,currentUserId);
             System.out.println(ok ? " Güncellendi" : "!!!️ ID bulunamadı veya yetkiniz yok");
+            if (ok) {
+                scheduleNotification(new Task(id, newTitle, "", taskTime, currentUserId));
+            }
+            // Tarih geldiğinde email simülasyonu
+            if(taskTime.equals(LocalDate.now()) && ok) {
+                System.out.println("Email gönderildi: Görev bugün yapılacak -> " + newTitle);
+            }
+           
+           
+
         } catch (NumberFormatException e) {
             System.out.println(" Lütfen sayı giriniz.");
         }
     }
+    
+    
+    private void scheduleNotification(Task task) {
+        LocalDate taskTime = task.getTaskTime();
+        if (taskTime == null) return;
+
+        // TaskTime bugünden önceyse timer kurmaya gerek yok
+        if (taskTime.isBefore(LocalDate.now())) return;
+
+        long delay = java.time.Duration.between(java.time.LocalDateTime.now(), taskTime.atStartOfDay()).toMillis();
+
+        new java.util.Timer().schedule(
+            new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    sendNotification(task);
+                }
+            },
+            delay
+        );
+    }
+
+    private void sendNotification(Task task) {
+        // Buraya email gönderme logic eklenebilir
+        System.out.println("⚡ Bildirim: Görev zamanı geldi! Görev başlığı: " + task.getTitle());
+    }
+
+    
+    
 }

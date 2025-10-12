@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
@@ -60,6 +59,8 @@ public class TaskHandler implements HttpHandler {
             map.put("title", t.getTitle());
             map.put("description", t.getDescription());
             map.put("userId", t.getUserId());
+            map.put("taskTime", t.getTaskTime() != null ? t.getTaskTime().toString() : "");
+
             list.add(map);
         }
 
@@ -70,7 +71,12 @@ public class TaskHandler implements HttpHandler {
         String title = params.get("title");
         String desc = params.get("desc");
         String userId = params.get("userId");
-        String timeParam = params.get("taskTime"); // fix typo
+
+        // Frontend’ten "date" olarak geliyor, bu yüzden onu alıyoruz
+        String timeParam = params.get("date");
+        if (timeParam == null) {
+            timeParam = params.get("taskTime"); // yedek: eğer ileride parametre adı değişirse
+        }
 
         if (title == null || userId == null) {
             sendResponse(exchange, "title ve userId gerekli", 400);
@@ -82,16 +88,21 @@ public class TaskHandler implements HttpHandler {
             try {
                 taskTime = LocalDate.parse(timeParam);
             } catch (DateTimeParseException e) {
-                sendResponse(exchange, "Geçersiz tarih formatı. Beklenen format: 2025-10-07T15:30:00", 400);
+                sendResponse(exchange, "Geçersiz tarih formatı. Beklenen format: yyyy-MM-dd", 400);
                 return;
             }
         }
 
         Task task = new Task(title, desc, userId, taskTime);
         repo.add(task);
+
+        // Email simülasyonu
+        if (taskTime != null && taskTime.equals(LocalDate.now())) {
+            System.out.println("Email gönderildi: Görev bugün yapılacak -> " + task.getTitle());
+        }
+
         sendResponse(exchange, "Task added", 200);
     }
-
     private void handleDeleteTask(HttpExchange exchange, Map<String,String> params) throws IOException {
         String userId = params.get("userId");
         int id = Integer.parseInt(params.get("id"));
@@ -104,7 +115,7 @@ public class TaskHandler implements HttpHandler {
         String userId = params.get("userId");
         String idStr = params.get("id");
         String title = params.get("title");
-        String desc = params.get("desc"); // still unused, but you can add later if needed
+        String desc = params.get("desc"); // şimdilik kullanılmıyor
         String timeParam = params.get("taskTime");
 
         if (userId == null || idStr == null || title == null) {
@@ -123,17 +134,22 @@ public class TaskHandler implements HttpHandler {
         LocalDate taskTime = null;
         if (timeParam != null && !timeParam.isEmpty()) {
             try {
-                taskTime = LocalDate.parse(timeParam); // expects "2025-10-07T15:30"
+                taskTime = LocalDate.parse(timeParam);
             } catch (DateTimeParseException e) {
-                sendResponse(exchange, "Geçersiz tarih formatı. Beklenen: yyyy-MM-ddTHH:mm", 400);
+                sendResponse(exchange, "Geçersiz tarih formatı. Beklenen: yyyy-MM-dd", 400);
                 return;
             }
         }
 
         boolean ok = repo.updateTitleAndTime(id, title, taskTime, userId);
+
+        // Email simülasyonu
+        if(taskTime != null && taskTime.equals(LocalDate.now()) && ok) {
+            System.out.println("Email gönderildi: Görev bugün yapılacak -> " + title);
+        }
+
         sendResponse(exchange, ok ? "Task updated" : "Not found / permission denied", 200);
     }
-
 
     private String toJson(List<Map<String,Object>> tasks) {
         StringBuilder sb = new StringBuilder("[");
@@ -142,7 +158,8 @@ public class TaskHandler implements HttpHandler {
             sb.append("{\"id\":").append(t.get("id"))
               .append(",\"title\":\"").append(t.get("title"))
               .append("\",\"description\":\"").append(t.get("description"))
-              .append("\",\"userId\":\"").append(t.get("userId")).append("\"}");
+              .append("\",\"userId\":\"").append(t.get("userId"))
+              .append("\",\"taskTime\":\"").append(t.get("taskTime")).append("\"}");
             if(i<tasks.size()-1) sb.append(",");
         }
         sb.append("]");
