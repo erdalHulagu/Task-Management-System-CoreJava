@@ -1,5 +1,5 @@
 package com.erdal.server;
-
+import com.erdal.server.handler.EmailVerificationHandler;
 import com.erdal.server.handler.LoginHandler;
 import com.erdal.server.handler.RegisterHandler;
 import com.erdal.server.handler.TaskHandler;
@@ -21,6 +21,8 @@ public class Server {
         server.createContext("/update", new TaskHandler());
         server.createContext("/user", new UserHandler());
         server.createContext("/updateUser", new UserHandler());
+        server.createContext("/sendCode", new EmailVerificationHandler());
+        server.createContext("/verifyCode", new EmailVerificationHandler());
 
         server.setExecutor(null);
         server.start();
