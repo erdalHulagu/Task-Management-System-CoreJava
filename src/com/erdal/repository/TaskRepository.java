@@ -95,30 +95,32 @@ public class TaskRepository {
 		}
 	}
 
-	// Task güncelleme (sadece başlık, user kontrolü ile)
-	public boolean updateTitleAndTime(int id, String newTitle, LocalDate newTime, String userId) {
-		String sql = "UPDATE tasks SET title = ?, taskTime = ? WHERE id = ? AND user_id = ?";
+	// Task güncelleme (başlık, açıklama ve tarih - user kontrolü ile)
+	public boolean updateTitleDescAndTime(int id, String newTitle, String desc, LocalDate newTime, String userId) {
+	    String sql = "UPDATE tasks SET title = ?, description = ?, taskTime = ? WHERE id = ? AND user_id = ?";
 
-		try (Connection conn = DatabaseConnection.connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
+	    try (Connection conn = DatabaseConnection.connect();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
 
-			ps.setString(1, newTitle);
-			ps.setObject(2, newTime); // Modern JDBC handles LocalDateTime automatically
-			ps.setInt(3, id);
-			ps.setString(4, userId);
+	        ps.setString(1, newTitle);
+	        ps.setString(2, desc);
+	        ps.setObject(3, newTime); // LocalDate modern JDBC'de desteklenir
+	        ps.setInt(4, id);
+	        ps.setString(5, userId);
 
-			int rowsUpdated = ps.executeUpdate();
+	        int rowsUpdated = ps.executeUpdate();
 
-			if (rowsUpdated > 0) {
-				System.out.println("Başlık ve tarih güncellendi: " + newTitle + " | " + newTime);
-				return true;
-			} else {
-				System.out.println("Güncellenecek görev bulunamadı.");
-				return false;
-			}
+	        if (rowsUpdated > 0) {
+	            System.out.println("Başlık, açıklama ve tarih güncellendi: " + newTitle + " | " + desc + " | " + newTime);
+	            return true;
+	        } else {
+	            System.out.println("Güncellenecek görev bulunamadı.");
+	            return false;
+	        }
 
-		} catch (SQLException e) {
-			System.out.println("Güncelleme hatası: " + e.getMessage());
-			return false;
-		}
+	    } catch (SQLException e) {
+	        System.out.println("Güncelleme hatası: " + e.getMessage());
+	        return false;
+	    }
 	}
 }

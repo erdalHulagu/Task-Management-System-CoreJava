@@ -107,6 +107,8 @@ public class TaskController {
             int id = Integer.parseInt(sc.nextLine());
             System.out.print("Yeni Başlık: ");
             String newTitle = sc.nextLine();
+            System.out.print("Yeni Aciklama: ");
+            String newDesc= sc.nextLine();
             System.out.print("Tarih (yyyy-MM-dd): ");
             String tarih = sc.nextLine();
             
@@ -119,7 +121,7 @@ public class TaskController {
                 return;
             }
 
-            boolean ok = repo.updateTitleAndTime(id, newTitle, taskTime,currentUserId);
+            boolean ok = repo.updateTitleDescAndTime(id, newTitle,newDesc, taskTime,currentUserId);
             System.out.println(ok ? " Güncellendi" : "!!!️ ID bulunamadı veya yetkiniz yok");
             if (ok) {
                 scheduleNotification(new Task(id, newTitle, "", taskTime, currentUserId));

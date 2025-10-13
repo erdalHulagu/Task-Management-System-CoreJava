@@ -141,7 +141,7 @@ public class TaskHandler implements HttpHandler {
             }
         }
 
-        boolean ok = repo.updateTitleAndTime(id, title, taskTime, userId);
+        boolean ok = repo.updateTitleDescAndTime(id, title, desc,taskTime, userId);
 
         // Email simülasyonu
         if(taskTime != null && taskTime.equals(LocalDate.now()) && ok) {
