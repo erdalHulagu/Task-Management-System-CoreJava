@@ -49,6 +49,9 @@ public class TaskReminderService {
         long delay = 0; // ilk çalıştırma için hemen
         long period = 24 * 60 * 60 * 1000; // 24 saat
         timer.scheduleAtFixedRate(dailyTask, delay, period);
+//        long delay = 5000; // 5 saniye
+//        long period = 60000; // 60 saniye (1 dakika)                     //su ust alt ve orta sira test icindi 
+//        timer.scheduleAtFixedRate(dailyTask, delay, period);
     }
 
     private void sendEmail(String toEmail, Task task) {
@@ -68,13 +71,27 @@ public class TaskReminderService {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(FROM_EMAIL));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-            message.setSubject("🕊️ Task Reminder: " + task.getTitle());
-            message.setText("Assalamu Alaikum!\n\nThis is a reminder for your task:\n" +
-                    task.getTitle() + "\n\nDescription: " + task.getDescription() +
-                    "\n\nDate: " + task.getTaskTime() + "\n\nHave a productive day, InshaAllah!");
+            message.setSubject("🕊️ Daily Planning Reminder ");
+
+            // HTML ile kart görünümü
+            String htmlContent = """
+                <div style="font-family: Poppins, sans-serif; max-width: 600px; margin: 0 auto; border-radius: 12px; background: #e0f0ff; border-left: 5px solid #1e3c72; padding: 20px; color: #1e3c72;">
+                    <h2 style="margin-top: 0;">🗂️ %s</h2>
+                    <p style="font-size: 14px; margin: 8px 0;">%s</p>
+                    <p style="font-size: 13px; color: #115a8a; margin: 10px 0;">📅 %s</p>
+                    <hr style="border: 0; border-top: 1px solid #1e3c72; margin: 10px 0;">
+                    <p style="font-size: 12px; color: #1e3c72;">Have a nice day, InshaAllah!</p>
+                </div>
+                """.formatted(
+                    task.getTitle(),
+                    task.getDescription() != null ? task.getDescription() : "",
+                    task.getTaskTime() != null ? task.getTaskTime() : ""
+                );
+
+            message.setContent(htmlContent, "text/html; charset=utf-8");
 
             Transport.send(message);
-            System.out.println(" Hatırlatma e-postası gönderildi: " + toEmail);
+            System.out.println("📧 Hatırlatma e-postası gönderildi: " + toEmail);
         } catch (MessagingException e) {
             System.out.println(" Email gönderilemedi: " + e.getMessage());
         }
