@@ -1,4 +1,4 @@
-package com.erdal.email;
+package com.erdal.service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;

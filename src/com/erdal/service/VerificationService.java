@@ -1,4 +1,4 @@
-package com.erdal.email;
+package com.erdal.service;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;

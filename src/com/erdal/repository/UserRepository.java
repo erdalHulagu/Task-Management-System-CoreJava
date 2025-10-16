@@ -171,5 +171,25 @@ public class UserRepository {
             return false;
         }
     }
+    
+    public String getUserEmailById(String userId) {
+        String sql = "SELECT email FROM users WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("email");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println(" Email alınamadı: " + e.getMessage());
+        }
+        return null;
+    }
+
 
 }

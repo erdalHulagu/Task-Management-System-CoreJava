@@ -1,7 +1,7 @@
 package com.erdal.server.handler;
 
-import com.erdal.email.EmailSender;
-import com.erdal.email.EmailVerificationService;
+import com.erdal.service.EmailSenderVericationService;
+import com.erdal.service.EmailVerificationService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -40,7 +40,7 @@ public class EmailVerificationHandler implements HttpHandler {
 
         boolean sent;
         try {
-            EmailSender emailSender = new EmailSender("smtp.host.com", 587, "user@example.com", "password");
+            EmailSenderVericationService emailSender = new EmailSenderVericationService("smtp.host.com", 587, "user@example.com", "password");
             sent = emailSender.sendVerificationCode(email, code);
         } catch (Exception e) {
             e.printStackTrace();

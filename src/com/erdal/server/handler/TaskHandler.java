@@ -2,6 +2,8 @@ package com.erdal.server.handler;
 
 import com.erdal.model.Task;
 import com.erdal.repository.TaskRepository;
+import com.erdal.repository.UserRepository;
+import com.erdal.service.TaskReminderService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -16,6 +18,7 @@ import java.util.*;
 public class TaskHandler implements HttpHandler {
 
     private final TaskRepository repo = new TaskRepository();
+    private final UserRepository userRepository=new UserRepository();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -95,7 +98,7 @@ public class TaskHandler implements HttpHandler {
 
         Task task = new Task(title, desc, userId, taskTime);
         repo.add(task);
-
+     
         // Email simülasyonu
         if (taskTime != null && taskTime.equals(LocalDate.now())) {
             System.out.println("Email gönderildi: Görev bugün yapılacak -> " + task.getTitle());

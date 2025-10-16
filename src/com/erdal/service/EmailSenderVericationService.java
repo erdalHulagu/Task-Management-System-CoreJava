@@ -1,4 +1,4 @@
-package com.erdal.email;
+package com.erdal.service;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
@@ -6,14 +6,14 @@ import jakarta.mail.internet.MimeMessage;
 
 import java.util.Properties;
 
-public class EmailSender {
+public class EmailSenderVericationService {
 
     private final String host;       // SMTP sunucu (ör: smtp.gmail.com, smtp.office365.com)
     private final int port;          // SMTP port (587 genellikle)
     private final String username;   // E-posta adresi
     private final String password;   // SMTP şifresi veya uygulama şifresi
 
-    public EmailSender(String host, int port, String username, String password) {
+    public EmailSenderVericationService(String host, int port, String username, String password) {
         this.host = host;
         this.port = port;
         this.username = username;

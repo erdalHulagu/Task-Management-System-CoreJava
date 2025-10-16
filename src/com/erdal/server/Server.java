@@ -5,6 +5,7 @@ import com.erdal.server.handler.LoginHandler;
 import com.erdal.server.handler.RegisterHandler;
 import com.erdal.server.handler.TaskHandler;
 import com.erdal.server.handler.UserHandler;
+import com.erdal.service.TaskReminderService; //  bunu ekle
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -65,6 +66,10 @@ public class Server {
                       return "CORS filter for Register";
                   }
               });
+
+        // --- 💡 Hatırlatma servisini başlatıyoruz ---
+        new TaskReminderService().startDailyReminder();
+        System.out.println("📧 Daily reminder service started!");
 
         // --- Sunucuyu başlat ---
         server.setExecutor(null);

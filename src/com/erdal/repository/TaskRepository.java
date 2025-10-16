@@ -123,4 +123,27 @@ public class TaskRepository {
 	        return false;
 	    }
 	}
+	public List<Task> findTasksByDate(LocalDate date) {
+	    List<Task> list = new ArrayList<>();
+	    String sql = "SELECT * FROM tasks WHERE tasktime = ?";
+	    try (Connection conn = DatabaseConnection.connect();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setDate(1, Date.valueOf(date));
+	        ResultSet rs = ps.executeQuery();
+
+	        while (rs.next()) {
+	            Task t = new Task(
+	                rs.getInt("id"),
+	                rs.getString("title"),
+	                rs.getString("description"),
+	                rs.getDate("task_time").toLocalDate(),
+	                rs.getString("user_id")
+	            );
+	            list.add(t);
+	        }
+	    } catch (SQLException e) {
+	        System.out.println("findTasksByDate error: " + e.getMessage());
+	    }
+	    return list;
+	}
 }
