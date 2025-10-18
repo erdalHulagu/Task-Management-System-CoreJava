@@ -65,15 +65,11 @@ public class TaskReminderService {
             }
         };
 
-        // 3️ — Gerçek kullanım: her 24 saatte bir çalışır
+        //  her 24 saatte bir çalışır
         long delay = 0;
         long period = 24 * 60 * 60 * 1000;
         timer.scheduleAtFixedRate(dailyTask, delay, period);
 
-        // 🔹 TEST için (örneğin 5 saniyede bir çalışsın)
-        // long delay = 5000;
-        // long period = 15000;
-        // timer.scheduleAtFixedRate(dailyTask, delay, period);
     }
 
 

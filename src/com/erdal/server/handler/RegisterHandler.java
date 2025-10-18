@@ -30,13 +30,6 @@
             private final UserRepository repo = new UserRepository();
             private static final Map<String, String> verificationCodes = new HashMap<>();
 
-            // ---------- BURAYI KENDİ BİLGİLERİNLE DOLDUR ----------
-            // Gönderen (sunucu) e-posta hesabı — buraya kendi gönderici adresini koy
-            private static final String FROM_EMAIL = "seningondericiadresin@gmail.com";
-            // Gmail için App Password (16 karakter) veya Outlook app password/şifresi
-            private static final String APP_PASSWORD = "16karakter_app_password";
-            // -----------------------------------------------------
-
             @Override
             public void handle(HttpExchange exchange) throws IOException {
 
@@ -74,7 +67,7 @@
                 String code = String.valueOf(new Random().nextInt(900000) + 100000);
                 verificationCodes.put(email, code);
 
-                System.out.println("✅ Kod oluşturuldu: " + email + " -> " + code);
+                System.out.println(" Kod oluşturuldu: " + email + " -> " + code);
 
                 try {
                     sendEmail(toCanonical(email), code); // email gönder
@@ -200,6 +193,6 @@
                 message.setText("Merhaba!\n\nKayıt doğrulama kodunuz: " + code + "\n\nBu kod 10 dakika geçerlidir.");
 
                 Transport.send(message);
-                System.out.println("📧 Email gönderildi: " + toEmail);
+                System.out.println(" Email gönderildi: " + toEmail);
             }
         }

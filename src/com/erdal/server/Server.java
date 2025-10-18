@@ -17,7 +17,7 @@ public class Server {
 
     public static void start() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
-        System.out.println("✅ Server started at http://localhost:8000");
+        System.out.println(" Server started at http://localhost:8000");
 
         // --- Context'leri ekliyoruz ---
         server.createContext("/Register", new RegisterHandler());

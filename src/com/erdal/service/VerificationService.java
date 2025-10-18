@@ -19,9 +19,7 @@ public class VerificationService {
     private static final String FROM_EMAIL = "seninmailin@gmail.com"; // buraya kendi gönderen mailini yaz
     private static final String FROM_PASSWORD = "uygulama_sifren"; // Gmail'de uygulama şifresi oluşturmalısın
 
-    /**
-     * E-posta adresine 6 haneli kod gönderir
-     */
+    //E-posta adresine 6 haneli kod gönderir
     public static boolean sendVerificationCode(String toEmail) {
         try {
             String code = generateCode();
@@ -57,9 +55,9 @@ public class VerificationService {
         }
     }
 
-    /**
-     * Girilen kodu kontrol eder
-     */
+    
+//      Girilen kodu kontrol eder
+     
     public static boolean verifyCode(String email, String code) {
         if (!verificationCodes.containsKey(email)) return false;
 
@@ -73,9 +71,7 @@ public class VerificationService {
         return isValid;
     }
 
-    /**
-     * 6 haneli rastgele sayı üretir
-     */
+   //6 haneli rastgele sayı üretir
     private static String generateCode() {
         Random random = new Random();
         int num = 100000 + random.nextInt(900000);

@@ -18,7 +18,6 @@ import java.util.*;
 public class TaskHandler implements HttpHandler {
 
     private final TaskRepository repo = new TaskRepository();
-    private final UserRepository userRepository=new UserRepository();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
