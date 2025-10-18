@@ -1,5 +1,6 @@
 package com.erdal.service;
 
+import com.erdal.databaseConnection.DatabaseConnection;
 import com.erdal.model.Task;
 import com.erdal.repository.TaskRepository;
 import com.erdal.repository.UserRepository;
@@ -26,7 +27,8 @@ public class TaskReminderService {
 
     private static final String FROM_EMAIL = "erdalhulahu@gmail.com";
     private static final String APP_PASSWORD = "fgwl dmhy xzrm hvxs";
-
+    
+    
     public void startDailyReminder() {
         Timer timer = new Timer(true);
 
@@ -34,6 +36,8 @@ public class TaskReminderService {
             @Override
             public void run() {
                 LocalDate today = LocalDate.now();
+
+                // Bugünün görevlerini al ve e-posta gönder
                 List<Task> tasks = taskRepository.findTasksByDate(today);
 
                 for (Task task : tasks) {
@@ -42,17 +46,36 @@ public class TaskReminderService {
                         sendEmail(email, task);
                     }
                 }
+
+                // 2 günden eski görevleri sil
+                LocalDate threeDaysAgo = LocalDate.now().minusDays(3);
+                String sql = "DELETE FROM tasks WHERE taskTime < ?";
+                try (var conn = DatabaseConnection.connect();
+                     var ps = conn.prepareStatement(sql)) {
+
+                    ps.setObject(1, threeDaysAgo);
+                    int deleted = ps.executeUpdate();
+
+                    if (deleted > 0) {
+                        System.out.println( deleted + " adet eski görev silindi (3 günden eski).");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Temizlik hatası: " + e.getMessage());
+                }
             }
         };
 
-        // her gün sabah 8:00’de çalışacak şekilde ayarlanabilir
-        long delay = 0; // ilk çalıştırma için hemen
-        long period = 24 * 60 * 60 * 1000; // 24 saat
+        // 3️ — Gerçek kullanım: her 24 saatte bir çalışır
+        long delay = 0;
+        long period = 24 * 60 * 60 * 1000;
         timer.scheduleAtFixedRate(dailyTask, delay, period);
-//        long delay = 5000; // 5 saniye
-//        long period = 60000; // 60 saniye (1 dakika)                     //su ust alt ve orta sira test icindi 
-//        timer.scheduleAtFixedRate(dailyTask, delay, period);
+
+        // 🔹 TEST için (örneğin 5 saniyede bir çalışsın)
+        // long delay = 5000;
+        // long period = 15000;
+        // timer.scheduleAtFixedRate(dailyTask, delay, period);
     }
+
 
     private void sendEmail(String toEmail, Task task) {
         try {
@@ -78,7 +101,7 @@ public class TaskReminderService {
                 <div style="font-family: Poppins, sans-serif; max-width: 600px; margin: 0 auto; border-radius: 12px; background: #e0f0ff; border-left: 5px solid #1e3c72; padding: 20px; color: #1e3c72;">
                     <h2 style="margin-top: 0;">🗂️ %s</h2>
                     <p style="font-size: 14px; margin: 8px 0;">%s</p>
-                    <p style="font-size: 13px; color: #115a8a; margin: 10px 0;">📅 %s</p>
+                    <p style="font-size: 13px; color: #115a8a; margin: 10px 0;">🗓️ %s</p>
                     <hr style="border: 0; border-top: 1px solid #1e3c72; margin: 10px 0;">
                     <p style="font-size: 12px; color: #1e3c72;">Have a nice day, InshaAllah!</p>
                 </div>

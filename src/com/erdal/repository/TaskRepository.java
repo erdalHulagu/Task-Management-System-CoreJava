@@ -94,6 +94,25 @@ public class TaskRepository {
 			return false;
 		}
 	}
+	public void deleteExpiredTasks() {
+	    String sql = "DELETE FROM tasks WHERE taskTime < ?";
+
+	    LocalDate threeDaysAgo = LocalDate.now().minusDays(3);
+
+	    try (Connection conn = DatabaseConnection.connect();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+	        ps.setObject(1, threeDaysAgo);
+	        int deletedCount = ps.executeUpdate();
+
+	        if (deletedCount > 0) {
+	            System.out.println("🧹 " + deletedCount + " eski görev silindi (3 gün geçmiş).");
+	        }
+
+	    } catch (SQLException e) {
+	        System.out.println("Eski görevleri silme hatası: " + e.getMessage());
+	    }
+	}
 
 	// Task güncelleme (başlık, açıklama ve tarih - user kontrolü ile)
 	public boolean updateTitleDescAndTime(int id, String newTitle, String desc, LocalDate newTime, String userId) {
