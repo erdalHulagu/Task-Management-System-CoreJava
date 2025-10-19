@@ -191,5 +191,27 @@ public class UserRepository {
         return null;
     }
 
+    public boolean deleteUserById(String userId) {
+        String sql = "DELETE FROM users WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, userId);
+            int affected = ps.executeUpdate();
+
+            if (affected > 0) {
+                System.out.println("️ User deleted: " + userId);
+                return true;
+            } else {
+                System.out.println("️ User not found: " + userId);
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Delete error: " + e.getMessage());
+            return false;
+        }
+    }
+
 
 }
