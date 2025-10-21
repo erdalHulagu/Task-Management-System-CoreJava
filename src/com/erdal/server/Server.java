@@ -28,6 +28,7 @@ public class Server {
         server.createContext("/update", new TaskHandler());
         server.createContext("/user", new UserHandler());
         server.createContext("/updateUser", new UserHandler());
+        server.createContext("/deleteUser", new UserHandler());
         server.createContext("/sendCode", new EmailVerificationHandler());
         server.createContext("/verifyCode", new EmailVerificationHandler());
 

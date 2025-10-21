@@ -103,5 +103,19 @@ public class UserController {
         } else {
             System.out.println(" Güncelleme başarısız.");
         }
+       
+    }
+    //Delete user
+    @SuppressWarnings("unused")
+	private void deleteUser() {
+    	System.out.print("Silinecek Kullanıcı ID: ");
+        String id = sc.nextLine();
+        
+        boolean success=repo.deleteUserById(id);
+        if (success) {
+            System.out.println(" Silme başarılı!");
+        } else {
+            System.out.println(" Silme başarısız.");
+        }
     }
 }
