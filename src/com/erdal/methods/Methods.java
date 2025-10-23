@@ -25,7 +25,7 @@ public class Methods implements MethodService {
 
     // Test metodu
     public void testGenerateUserId() {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             System.out.println("Oluşturulan ID: " + generateUserId());
         }
     }

@@ -75,14 +75,15 @@ public class UserHandler implements HttpHandler {
         }
 
         String json = String.format(
-                "{\"id\":\"fullName\":\"%s\",\"phone\":\"%s\",\"gender\":\"%s\",\"address\":\"%s\",\"email\":\"%s\"}",
-                escapeJson(user.getId()),
-                escapeJson(user.getFullName()),
-                escapeJson(user.getPhone()),
-                escapeJson(user.getGender()),
-                escapeJson(user.getAddress()),
-                escapeJson(user.getEmail())
-        );
+        	    "{\"id\":\"%s\",\"fullName\":\"%s\",\"phone\":\"%s\",\"gender\":\"%s\",\"address\":\"%s\",\"email\":\"%s\"}",
+        	    escapeJson(user.getId()),
+        	    escapeJson(user.getFullName()),
+        	    escapeJson(user.getPhone()),
+        	    escapeJson(user.getGender()),
+        	    escapeJson(user.getAddress()),
+        	    escapeJson(user.getEmail())
+        	);
+
 
         exchange.getResponseHeaders().add("Content-Type", "application/json");
         sendResponse(exchange, 200, json);
