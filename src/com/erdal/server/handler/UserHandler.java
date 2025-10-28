@@ -58,7 +58,7 @@ public class UserHandler implements HttpHandler {
     	    }
     }
 
-    // 🔹 Kullanıcı bilgilerini getir
+    // Kullanıcı bilgilerini getir
     private void handleGet(HttpExchange exchange) throws IOException {
         URI requestURI = exchange.getRequestURI();
         Map<String, String> params = queryToMap(requestURI.getQuery());
@@ -89,7 +89,7 @@ public class UserHandler implements HttpHandler {
         sendResponse(exchange, 200, json);
     }
 
-    // 🔹 Kullanıcı bilgilerini güncelle
+    //Kullanıcı bilgilerini güncelle
     private void handleUpdateParams(HttpExchange exchange, Map<String, String> params) throws IOException {
         String id = params.get("id");
         String field = params.get("field");
@@ -133,7 +133,7 @@ public class UserHandler implements HttpHandler {
     }
 
 
-    // 🔹 query veya body string (a=b&c=d) -> Map
+    //query veya body string (a=b&c=d) -> Map
     private Map<String, String> queryToMap(String query) {
         Map<String, String> map = new HashMap<>();
         if (query == null || query.isEmpty()) return map;
@@ -154,7 +154,7 @@ public class UserHandler implements HttpHandler {
         return map;
     }
 
-    // 🔹 HTTP yanıt gönder
+    // HTTP yanıt gönder
     private void sendResponse(HttpExchange exchange, int statusCode, String msg) throws IOException {
         byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
         exchange.sendResponseHeaders(statusCode, bytes.length);
@@ -163,7 +163,7 @@ public class UserHandler implements HttpHandler {
         }
     }
 
-    // 🔹 JSON escape
+    // JSON escape
     private String escapeJson(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
