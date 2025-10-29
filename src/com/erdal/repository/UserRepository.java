@@ -29,7 +29,8 @@ public class UserRepository {
                 address TEXT,
                 email VARCHAR(255) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_admin BOOLEAN DEFAULT FALSE
             )
             """;
 
@@ -76,7 +77,7 @@ public class UserRepository {
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return new User(
+            	User user = new User(
                         rs.getString("id"),
                         rs.getString("full_name"),
                         rs.getString("phone"),
@@ -85,6 +86,8 @@ public class UserRepository {
                         rs.getString("email"),
                         rs.getString("password")
                 );
+                user.setAdmin(rs.getBoolean("is_admin"));
+                return user;
             }
         } catch (SQLException e) {
             System.out.println("Login error: " + e.getMessage());
@@ -111,6 +114,7 @@ public class UserRepository {
                         rs.getString("email"),
                         rs.getString("password")
                 );
+                user.setAdmin(rs.getBoolean("is_admin"));
                 list.add(user);
             }
 

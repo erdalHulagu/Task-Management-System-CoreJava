@@ -8,9 +8,24 @@ public class User {
     private String address;
     private String email;     
     private String password; 
-    private Role role;
+    private boolean isAdmin;
+    
 
 	public User() {}
+
+
+	public User(String id, String fullName, String phone, String gender, String address, String email, String password,
+			boolean isAdmin) {
+		super();
+		this.id = id;
+		this.fullName = fullName;
+		this.phone = phone;
+		this.gender = gender;
+		this.address = address;
+		this.email = email;
+		this.password = password;
+		this.isAdmin = isAdmin;
+	}
 
 
 	public User(String id, String fullName, String phone, String gender, String address, String email,
@@ -34,27 +49,19 @@ public class User {
 		this.email = email;
 		this.password = password;
 	}
-	public User(String fullName, String phone, String gender, String address, String email,
-			String password,Role role) {
-		super();
-		this.fullName = fullName;
-		this.phone = phone;
-		this.gender = gender;
-		this.address = address;
-		this.email = email;
-		this.password = password;
-		this.role=role;
+	
+
+	public boolean isAdmin() {
+		return isAdmin;
 	}
 
 
-	public Role getRole() {
-		return role;
-	}
 
 
-	public void setRole(Role role) {
-		this.role = role;
+	public void setAdmin(boolean isAdmin) {
+		this.isAdmin = isAdmin;
 	}
+	
 
 
 	public String getId() {
@@ -130,11 +137,15 @@ public class User {
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", fullName=" + fullName + ", phone=" + phone + ", gender=" + gender + ", address="
-				+ address + ", email=" + email + ", password=" + password +", role=" + role + ", getId()=" + getId() + ", getFullName()="
-				+ getFullName() + ", getPhone()=" + getPhone() + ", getGender()=" + getGender() + ", getAddress()="
-				+ getAddress() + ", getEmail()=" + getEmail() + ", getPassword()=" + getPassword() + ", getRole()=" + getRole()+ ", getClass()="
-				+ getClass() + ", hashCode()=" + hashCode() + ", toString()=" + super.toString() + "]";
+				+ address + ", email=" + email + ", password=" + password + ", isAdmin=" + isAdmin + ", isAdmin()="
+				+ isAdmin() + ", getId()=" + getId() + ", getFullName()=" + getFullName() + ", getPhone()=" + getPhone()
+				+ ", getGender()=" + getGender() + ", getAddress()=" + getAddress() + ", getEmail()=" + getEmail()
+				+ ", getPassword()=" + getPassword() + ", getClass()=" + getClass() + ", hashCode()=" + hashCode()
+				+ ", toString()=" + super.toString() + "]";
 	}
+
+
+	
 
 
 	

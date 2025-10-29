@@ -6,6 +6,7 @@ import com.erdal.repository.UserRepository;
 import java.util.List;
 import java.util.Scanner;
 
+
 public class UserController {
 
     private final UserRepository repo = new UserRepository();
@@ -62,16 +63,30 @@ public class UserController {
 
     // Kullanıcı listeleme
     private void listUsers() {
-        List<User> users = repo.findAll();
-        if (users.isEmpty()) {
-            System.out.println(" Kayıt yok.");
-        } else {
-            users.forEach(u -> System.out.println(u.getId() + " | " + u.getFullName() + " | " + u.getEmail()));
-        }
+       
+       User user=login();
+       
+       if (user == null) {
+           System.out.println("Giriş başarısız, kullanıcı listesine erişilemez.");
+           return;
+       }
+       
+       if (user.isAdmin()) {
+    	   List<User> users = repo.findAll();
+    	   if (users.isEmpty()) {
+               System.out.println(" Kayıt yok.");
+           } else {
+               users.forEach(u -> System.out.println(u.getId() + " | " + u.getFullName() + " | " + u.getEmail()));
+           }
+		
+	}else {
+		System.out.println(user.getFullName()+" yetki alani disinda");
+	}
+       
     }
 
     // Login
-    private void login() {
+    private User login() {
         System.out.print("Email: ");
         String email = sc.nextLine();
         System.out.print("Şifre: ");
@@ -80,10 +95,12 @@ public class UserController {
         User user = repo.login(email, password);
         if (user != null) {
             currentUserId = user.getId();
+            
             System.out.println(" Giriş başarılı! Hoşgeldin, " + user.getFullName());
         } else {
             System.out.println("Geçersiz email veya şifre");
         }
+        return user;
     }
 
     // Kullanıcı güncelleme
