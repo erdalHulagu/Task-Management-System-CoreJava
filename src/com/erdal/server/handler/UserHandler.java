@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class UserHandler implements HttpHandler {
@@ -20,42 +21,72 @@ public class UserHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-    	 Headers h = exchange.getResponseHeaders();
-    	    h.add("Access-Control-Allow-Origin", "*");
-    	    h.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE, PUT");
-    	    h.add("Access-Control-Allow-Headers", "Content-Type");
-    	   
-    	    // Preflight isteği
-    	    if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-    	        exchange.sendResponseHeaders(204, -1); // 204 No Content
-    	        return;
-    	    }
+        Headers h = exchange.getResponseHeaders();
+        h.add("Access-Control-Allow-Origin", "*");
+        h.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE, PUT");
+        h.add("Access-Control-Allow-Headers", "Content-Type");
 
-    	    String method = exchange.getRequestMethod();
-    	    String path = exchange.getRequestURI().getPath();
-    	    String rawQuery = exchange.getRequestURI().getQuery();
-    	    System.out.println("[UserHandler] " + method + " " + path + (rawQuery != null ? "?" + rawQuery : ""));
+        // Preflight isteği
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.sendResponseHeaders(204, -1); // 204 No Content
+            return;
+        }
 
-    	    try {
-    	        if ("GET".equalsIgnoreCase(method) && "/user".equals(path)) {
-    	            handleGet(exchange);
-    	        } else if ("GET".equalsIgnoreCase(method) && "/updateUser".equals(path)) {
-    	            Map<String, String> params = queryToMap(rawQuery);
-    	            handleUpdateParams(exchange, params);
-    	        } else if ("POST".equalsIgnoreCase(method) && ("/user".equals(path) || "/updateUser".equals(path))) {
-    	            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-    	            Map<String, String> params = queryToMap(body);
-    	            handleUpdateParams(exchange, params);
-    	        } else if ("DELETE".equalsIgnoreCase(method) && "/deleteUser".equals(path)) {
-    	        	 exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-    	             handleDeleteUser(exchange);
-    	        } else {
-    	            sendResponse(exchange, 405, "Method Not Allowed");
-    	        }
-    	    } catch (Exception e) {
-    	        e.printStackTrace();
-    	        sendResponse(exchange, 500, "Internal Server Error");
-    	    }
+        String method = exchange.getRequestMethod();
+        String path = exchange.getRequestURI().getPath();
+        String rawQuery = exchange.getRequestURI().getQuery();
+        System.out.println("[UserHandler] " + method + " " + path + (rawQuery != null ? "?" + rawQuery : ""));
+
+        try {
+            if ("GET".equalsIgnoreCase(method) && "/user".equals(path)) {
+                handleGet(exchange);
+            } 
+            // ✅ NEW: Tüm kullanıcıları listele
+            else if ("GET".equalsIgnoreCase(method) && "/users".equals(path)) {
+                handleGetAllUsers(exchange);
+            }
+            else if ("GET".equalsIgnoreCase(method) && "/updateUser".equals(path)) {
+                Map<String, String> params = queryToMap(rawQuery);
+                handleUpdateParams(exchange, params);
+            } else if ("POST".equalsIgnoreCase(method) && ("/user".equals(path) || "/updateUser".equals(path))) {
+                String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+                Map<String, String> params = queryToMap(body);
+                handleUpdateParams(exchange, params);
+            } else if ("DELETE".equalsIgnoreCase(method) && "/deleteUser".equals(path)) {
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                handleDeleteUser(exchange);
+            } else {
+                sendResponse(exchange, 405, "Method Not Allowed");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendResponse(exchange, 500, "Internal Server Error");
+        }
+    }
+
+    // ✅ NEW: Tüm kullanıcıları getir
+    private void handleGetAllUsers(HttpExchange exchange) throws IOException {
+        List<User> users = repo.findAll();
+        if (users == null || users.isEmpty()) {
+            sendResponse(exchange, 200, "[]");
+            return;
+        }
+
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < users.size(); i++) {
+            User u = users.get(i);
+            json.append("{")
+                .append("\"id\":\"").append(escapeJson(u.getId())).append("\",")
+                .append("\"fullName\":\"").append(escapeJson(u.getFullName())).append("\",")
+                .append("\"email\":\"").append(escapeJson(u.getEmail())).append("\",")
+                .append("\"phone\":\"").append(escapeJson(u.getPhone())).append("\"")
+                .append("}");
+            if (i < users.size() - 1) json.append(",");
+        }
+        json.append("]");
+
+        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+        sendResponse(exchange, 200, json.toString());
     }
 
     // Kullanıcı bilgilerini getir
@@ -75,21 +106,20 @@ public class UserHandler implements HttpHandler {
         }
 
         String json = String.format(
-        	    "{\"id\":\"%s\",\"fullName\":\"%s\",\"phone\":\"%s\",\"gender\":\"%s\",\"address\":\"%s\",\"email\":\"%s\"}",
+        	    "{\"id\":\"%s\",\"fullName\":\"%s\",\"phone\":\"%s\",\"gender\":\"%s\",\"address\":\"%s\",\"email\":\"%s\",\"isAdmin\":%s}",
         	    escapeJson(user.getId()),
         	    escapeJson(user.getFullName()),
         	    escapeJson(user.getPhone()),
         	    escapeJson(user.getGender()),
         	    escapeJson(user.getAddress()),
-        	    escapeJson(user.getEmail())
+        	    escapeJson(user.getEmail()),
+        	    user.isAdmin() 
         	);
-
 
         exchange.getResponseHeaders().add("Content-Type", "application/json");
         sendResponse(exchange, 200, json);
     }
 
-    //Kullanıcı bilgilerini güncelle
     private void handleUpdateParams(HttpExchange exchange, Map<String, String> params) throws IOException {
         String id = params.get("id");
         String field = params.get("field");
@@ -132,8 +162,6 @@ public class UserHandler implements HttpHandler {
         }
     }
 
-
-    //query veya body string (a=b&c=d) -> Map
     private Map<String, String> queryToMap(String query) {
         Map<String, String> map = new HashMap<>();
         if (query == null || query.isEmpty()) return map;
@@ -154,7 +182,6 @@ public class UserHandler implements HttpHandler {
         return map;
     }
 
-    // HTTP yanıt gönder
     private void sendResponse(HttpExchange exchange, int statusCode, String msg) throws IOException {
         byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
         exchange.sendResponseHeaders(statusCode, bytes.length);
@@ -163,7 +190,6 @@ public class UserHandler implements HttpHandler {
         }
     }
 
-    // JSON escape
     private String escapeJson(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");

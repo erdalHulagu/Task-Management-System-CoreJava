@@ -140,7 +140,8 @@ public class UserRepository {
                         rs.getString("gender"),
                         rs.getString("address"),
                         rs.getString("email"),
-                        rs.getString("password")
+                        rs.getString("password"),
+                        rs.getBoolean("is_admin")
                 );
             }
 
