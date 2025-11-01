@@ -41,7 +41,7 @@ public class UserHandler implements HttpHandler {
             if ("GET".equalsIgnoreCase(method) && "/user".equals(path)) {
                 handleGet(exchange);
             } 
-            // ✅ NEW: Tüm kullanıcıları listele
+            //  Tüm kullanıcıları listele
             else if ("GET".equalsIgnoreCase(method) && "/users".equals(path)) {
                 handleGetAllUsers(exchange);
             }
@@ -64,7 +64,7 @@ public class UserHandler implements HttpHandler {
         }
     }
 
-    // ✅ NEW: Tüm kullanıcıları getir
+    //  Tüm kullanıcıları getir
     private void handleGetAllUsers(HttpExchange exchange) throws IOException {
         List<User> users = repo.findAll();
         if (users == null || users.isEmpty()) {

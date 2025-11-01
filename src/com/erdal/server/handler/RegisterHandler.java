@@ -63,14 +63,21 @@
                     return;
                 }
 
+                // Email’i normalize et (trim + lowercase)
+                String normalizedEmail = email.trim().toLowerCase();
+
+                // Eğer zaten kod varsa tekrar göndermeyi engelle
+                if (verificationCodes.containsKey(normalizedEmail)) {
+                    sendResponse(exchange, "Bu e-posta için zaten bir doğrulama kodu gönderildi. Lütfen kontrol edin.", 400);
+                    return;
+                }
+
                 // 6 haneli doğrulama kodu üret
                 String code = String.valueOf(new Random().nextInt(900000) + 100000);
-                verificationCodes.put(email, code);
-
-                System.out.println(" Kod oluşturuldu: " + email + " -> " + code);
+                verificationCodes.put(normalizedEmail, code);
 
                 try {
-                    sendEmail(toCanonical(email), code); // email gönder
+                    sendEmail(normalizedEmail, code); // email gönder
                 } catch (Exception e) {
                     e.printStackTrace();
                     sendResponse(exchange, "Doğrulama kodu gönderilemedi: " + e.getMessage(), 500);
@@ -79,6 +86,7 @@
 
                 sendResponse(exchange, "Doğrulama kodu gönderildi!", 200);
             }
+
 
             // e-posta adresini basitçe normalleştir (opsiyonel)
             private String toCanonical(String email) {
@@ -115,12 +123,23 @@
                     return;
                 }
 
-                User user = new User(fullName, phone, gender, address, email, password);
-                repo.register(user);
-                verificationCodes.remove(email);
+                // Aynı e-posta kontrolü controller seviyesinde
+                if (repo.findByEmail(email) != null) {
+                    sendResponse(exchange, "Bu e-posta zaten kullanılıyor!", 400); // frontend bunu gösterecek
+                    return;
+                }
 
-                sendResponse(exchange, "Kayıt başarılı!", 200);
+                User user = new User(fullName, phone, gender, address, email, password);
+                boolean added = repo.register(user); // register metodunu boolean dönecek şekilde güncelleyebilirsin
+
+                if (added) {
+                    verificationCodes.remove(email);
+                    sendResponse(exchange, "Kayıt başarılı!", 200);
+                } else {
+                    sendResponse(exchange, "Kayıt sırasında bir hata oluştu!", 500);
+                }
             }
+
 
             private Map<String, String> queryToMap(String query) {
                 Map<String, String> result = new HashMap<>();

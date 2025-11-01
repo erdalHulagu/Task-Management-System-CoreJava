@@ -44,10 +44,10 @@ public class UserRepository {
     }
 
     // adding user
-    public void register(User user) {
-        String sql = "INSERT INTO users (id, full_name, phone, gender, address, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    public boolean register(User user) {
+        String insertSql = "INSERT INTO users (id, full_name, phone, gender, address, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(insertSql)) {
 
             String userId = methodService.generateUserId();
             ps.setString(1, userId);
@@ -60,11 +60,15 @@ public class UserRepository {
 
             ps.executeUpdate();
             System.out.println("User added: " + user.getFullName() + " (ID: " + userId + ")");
+            return true;
 
         } catch (SQLException e) {
             System.out.println("Adding user error: " + e.getMessage());
+            return false;
         }
     }
+
+
 
     //Login by Email + Password 
     public User login(String email, String password) {
@@ -218,5 +222,30 @@ public class UserRepository {
         }
     }
 
+    public User findByEmail(String email) {
+        String sql = "SELECT * FROM users WHERE email = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return new User(
+                    rs.getString("id"),
+                    rs.getString("full_name"),
+                    rs.getString("phone"),
+                    rs.getString("gender"),
+                    rs.getString("address"),
+                    rs.getString("email"),
+                    rs.getString("password"),
+                    rs.getBoolean("is_admin")
+                );
+            }
+        } catch (SQLException e) {
+            System.out.println("findByEmail error: " + e.getMessage());
+        }
+        return null;
+    }
+
+    
 }

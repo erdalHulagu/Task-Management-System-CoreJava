@@ -70,7 +70,7 @@ public class Server {
 
         // --- 💡 Hatırlatma servisini başlatıyoruz ---
         new TaskReminderService().startDailyReminder();
-        System.out.println("📧 Daily reminder service started!");
+        System.out.println(" Daily reminder service started!");
 
         // --- Sunucuyu başlat ---
         server.setExecutor(null);

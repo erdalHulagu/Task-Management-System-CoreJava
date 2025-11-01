@@ -8,16 +8,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
+import com.erdal.config.Config;
+
 public class VerificationService {
 
     // Email → Code eşleşmesi
     private static final Map<String, String> verificationCodes = new HashMap<>();
 
     // Gmail veya farklı sağlayıcılar için SMTP ayarları
-    private static final String SMTP_HOST = "smtp.gmail.com"; // istersen outlook veya yandex olarak değiştirebiliriz
+    private static final String SMTP_HOST = "smtp.gmail.com"; 
     private static final String SMTP_PORT = "587";
-    private static final String FROM_EMAIL = "seninmailin@gmail.com"; // buraya kendi gönderen mailini yaz
-    private static final String FROM_PASSWORD = "uygulama_sifren"; // Gmail'de uygulama şifresi oluşturmalısın
+    private static final String FROM_EMAIL = Config.get("email.user");
+    private static final String FROM_PASSWORD = Config.get("email.password");
 
     //E-posta adresine 6 haneli kod gönderir
     public static boolean sendVerificationCode(String toEmail) {
@@ -43,10 +45,10 @@ public class VerificationService {
             message.setFrom(new InternetAddress(FROM_EMAIL));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("E-posta Doğrulama Kodu");
-            message.setText("Selam! 👋\n\nDoğrulama kodun: " + code + "\n\nBu kod 5 dakika geçerlidir.");
+            message.setText("Selam!\n\nDoğrulama kodun: " + code + "\n\nBu kod 5 dakika geçerlidir.");
 
             Transport.send(message);
-            System.out.println("✅ Kod gönderildi: " + toEmail + " --> " + code);
+            System.out.println(" Kod gönderildi: " + toEmail + " --> " + code);
             return true;
 
         } catch (Exception e) {

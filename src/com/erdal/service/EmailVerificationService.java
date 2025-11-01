@@ -5,7 +5,7 @@ import java.util.Random;
 
 public class EmailVerificationService {
 
- // Email -> [code, expireTime] eşlemesi
+ // Email ve code, expireTime eşlemesi
  private static final Map<String, CodeEntry> codeMap = new HashMap<>();
 
  private static class CodeEntry {

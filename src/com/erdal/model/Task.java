@@ -3,15 +3,14 @@ package com.erdal.model;
 import java.time.LocalDate;
 
 public class Task {
-    private int id;                 // Not: DB’deki id kolonu
-    private String title;           // Not: Görev başlığı
+    private int id;                 
+    private String title;           
     private String description;
     private String userId;
     private LocalDate taskTime;
     
-    // Not: Görev açıklaması
-
-    //  Boş constructor (JDBC için gerekli)
+   
+public Task(){};    
    
 
     // Parametreli constructor (tam nesne)

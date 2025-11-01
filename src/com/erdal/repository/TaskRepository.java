@@ -106,7 +106,7 @@ public class TaskRepository {
 	        int deletedCount = ps.executeUpdate();
 
 	        if (deletedCount > 0) {
-	            System.out.println("🧹 " + deletedCount + " eski görev silindi (3 gün geçmiş).");
+	            System.out.println( deletedCount + " eski görev silindi (3 gün geçmiş).");
 	        }
 
 	    } catch (SQLException e) {

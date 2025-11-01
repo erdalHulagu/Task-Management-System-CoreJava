@@ -22,7 +22,6 @@ public class TaskHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
-        String method = exchange.getRequestMethod();
 
         Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
 

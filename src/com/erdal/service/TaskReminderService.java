@@ -4,6 +4,7 @@ import com.erdal.databaseConnection.DatabaseConnection;
 import com.erdal.model.Task;
 import com.erdal.repository.TaskRepository;
 import com.erdal.repository.UserRepository;
+import com.erdal.config.Config;
 
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
@@ -25,8 +26,8 @@ public class TaskReminderService {
     private final TaskRepository taskRepository = new TaskRepository();
     private final UserRepository userRepository = new UserRepository();
 
-    private static final String FROM_EMAIL = "erdalhulahu@gmail.com";
-    private static final String APP_PASSWORD = "fgwl dmhy xzrm hvxs";
+    private static final String FROM_EMAIL = Config.get("email.user");
+    private static final String APP_PASSWORD = Config.get("email.password");
     
     
     public void startDailyReminder() {
